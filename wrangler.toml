@@ -3,11 +3,20 @@ main = "worker/src/index.js"
 compatibility_date = "2026-04-04"
 workers_dev = true
 
+vars = { TURN_URLS = "turn:relay.metered.ca:80?transport=udp,turn:relay.metered.ca:443?transport=tcp,turns:relay.metered.ca:443?transport=tcp", TURN_USERNAME = "optional", TURN_CREDENTIAL = "optional" }
+
 [assets]
 directory = "./frontend"
 binding = "ASSETS"
 
 [[durable_objects.bindings]]
+name = "ROOM"
+class_name = "RoomSignalingDO"
+
+[env.production]
+vars = { TURN_URLS = "turn:relay.metered.ca:80?transport=udp,turn:relay.metered.ca:443?transport=tcp,turns:relay.metered.ca:443?transport=tcp", TURN_USERNAME = "optional", TURN_CREDENTIAL = "optional" }
+
+[[env.production.durable_objects.bindings]]
 name = "ROOM"
 class_name = "RoomSignalingDO"
 

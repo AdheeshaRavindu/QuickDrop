@@ -81,7 +81,7 @@
     .card {
       width: min(760px, 100%);
       min-height: 540px;
-      max-height: calc(100vh - 32px);
+      max-height: none;
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.65);
       border-radius: var(--radius);
@@ -91,7 +91,7 @@
       z-index: 1;
       padding: 28px;
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: visible;
     }
 
     .card::-webkit-scrollbar {
@@ -114,6 +114,27 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 18px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .sound-toggle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
     }
 
     .brand {
@@ -435,6 +456,7 @@
         min-height: 640px;
         padding: 20px;
         max-height: calc(100vh - 16px);
+        overflow-y: auto;
       }
 
       .screens {
@@ -455,8 +477,14 @@
   <main class="card">
     <div class="topbar">
       <div class="brand">QuickDrop</div>
-      <div id="connectionBadge" class="status-inline warn">
-        <span class="dot"></span><span id="connectionLabel">Not connected</span>
+      <div class="topbar-right">
+        <label class="sound-toggle">
+          <input id="soundToggle" type="checkbox" checked>
+          Sound effects
+        </label>
+        <div id="connectionBadge" class="status-inline warn">
+          <span class="dot"></span><span id="connectionLabel">Not connected</span>
+        </div>
       </div>
     </div>
 
@@ -589,12 +617,6 @@
       </div>
     </section>
 
-    <div class="row" style="justify-content: flex-end; margin-top: 16px;">
-      <label class="muted" style="display: inline-flex; align-items: center; gap: 8px;">
-        <input id="soundToggle" type="checkbox" checked>
-        Sound effects
-      </label>
-    </div>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
