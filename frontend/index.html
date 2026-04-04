@@ -78,6 +78,7 @@
     .card {
       width: min(760px, 100%);
       min-height: 540px;
+      max-height: calc(100vh - 32px);
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.55);
       border-radius: var(--radius);
@@ -86,7 +87,8 @@
       position: relative;
       z-index: 1;
       padding: 28px;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .topbar {
@@ -261,14 +263,22 @@
     }
 
     .qr-wrap {
-      width: 180px;
-      height: 180px;
+      width: 192px;
+      height: 192px;
       border-radius: 14px;
       background: white;
       border: 1px solid var(--border);
       display: grid;
       place-items: center;
-      padding: 10px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .qr-wrap canvas,
+    .qr-wrap img {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
     }
 
     .progress-shell {
@@ -368,6 +378,7 @@
       .card {
         min-height: 640px;
         padding: 20px;
+        max-height: calc(100vh - 16px);
       }
 
       .screens {
@@ -375,8 +386,8 @@
       }
 
       .qr-wrap {
-        width: 160px;
-        height: 160px;
+        width: 152px;
+        height: 152px;
       }
     }
   </style>
@@ -1076,23 +1087,21 @@
           return;
         }
 
-        qrInstance = new QRCode(el.qrCode, {
-          text: url,
-          width: 180,
-          height: 180,
-          colorDark: "#0f1c2e",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        const createQr = (container) => {
+          const rect = container.getBoundingClientRect();
+          const size = Math.max(120, Math.floor(Math.min(rect.width, rect.height)));
+          return new QRCode(container, {
+            text: url,
+            width: size,
+            height: size,
+            colorDark: "#0f1c2e",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        };
 
-        new QRCode(el.waitingQrCode, {
-          text: url,
-          width: 180,
-          height: 180,
-          colorDark: "#0f1c2e",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        qrInstance = createQr(el.qrCode);
+        createQr(el.waitingQrCode);
       }
 
       async function onSelectFile(file) {
