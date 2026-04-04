@@ -5,20 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickDrop - Peer to Peer File Sharing</title>
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
     :root {
-      --bg-a: #f2f7ff;
-      --bg-b: #e9fff6;
-      --card-bg: rgba(255, 255, 255, 0.92);
-      --text-main: #0f1c2e;
-      --text-muted: #5e6b7e;
-      --primary: #0d7f6f;
-      --primary-dark: #085f53;
-      --accent: #ff935c;
-      --border: #d7e4f2;
+      --bg-a: #e8f4ff;
+      --bg-b: #eefcf4;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --text-main: #11233c;
+      --text-muted: #5c708b;
+      --primary: #067a69;
+      --primary-dark: #055f53;
+      --accent: #f29a62;
+      --border: #cfdff0;
       --danger: #cb3f5b;
       --ok: #1f9d62;
-      --shadow: 0 28px 80px rgba(19, 54, 84, 0.18);
-      --radius: 22px;
+      --shadow: 0 22px 70px rgba(18, 56, 92, 0.17);
+      --radius: 24px;
       --duration: 340ms;
     }
 
@@ -30,7 +32,7 @@
     body {
       height: 100%;
       margin: 0;
-      font-family: "Poppins", "Segoe UI", sans-serif;
+      font-family: "Manrope", "Segoe UI", sans-serif;
       color: var(--text-main);
     }
 
@@ -39,8 +41,9 @@
       place-items: center;
       padding: 24px;
       background:
-        radial-gradient(circle at 10% 10%, rgba(13, 127, 111, 0.15), transparent 42%),
-        radial-gradient(circle at 90% 20%, rgba(255, 147, 92, 0.22), transparent 40%),
+        radial-gradient(circle at 12% 8%, rgba(6, 122, 105, 0.2), transparent 38%),
+        radial-gradient(circle at 88% 18%, rgba(242, 154, 98, 0.24), transparent 34%),
+        radial-gradient(circle at 78% 82%, rgba(75, 139, 245, 0.14), transparent 30%),
         linear-gradient(135deg, var(--bg-a), var(--bg-b));
       overflow-x: hidden;
     }
@@ -80,10 +83,10 @@
       min-height: 540px;
       max-height: calc(100vh - 32px);
       background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.65);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
       position: relative;
       z-index: 1;
       padding: 28px;
@@ -91,17 +94,32 @@
       overflow-y: auto;
     }
 
+    .card::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .card::-webkit-scrollbar-thumb {
+      background: #c0d3e8;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    .card::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
     }
 
     .brand {
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: 1.65rem;
     }
 
     .dot {
@@ -168,9 +186,15 @@
     }
 
     h1 {
-      font-size: clamp(1.6rem, 3vw, 2rem);
+      font-size: clamp(1.72rem, 3vw, 2.18rem);
+      font-weight: 800;
       line-height: 1.25;
       margin-top: 12px;
+    }
+
+    h2 {
+      font-weight: 800;
+      font-size: 1.7rem;
     }
 
     .muted {
@@ -181,16 +205,16 @@
 
     .dropzone {
       margin-top: 10px;
-      border: 2px dashed #aac7df;
-      border-radius: 18px;
+      border: 2px dashed #74a3c8;
+      border-radius: 20px;
       min-height: 220px;
       display: grid;
       place-items: center;
       text-align: center;
       padding: 24px;
       background:
-        linear-gradient(180deg, rgba(13, 127, 111, 0.06), rgba(255, 147, 92, 0.06));
-      transition: border-color var(--duration) ease, transform var(--duration) ease;
+        linear-gradient(180deg, rgba(6, 122, 105, 0.08), rgba(242, 154, 98, 0.07));
+      transition: border-color var(--duration) ease, transform var(--duration) ease, box-shadow var(--duration) ease;
       cursor: pointer;
     }
 
@@ -198,13 +222,14 @@
     .dropzone.dragging {
       border-color: var(--primary);
       transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(6, 122, 105, 0.14);
     }
 
     .btn {
       border: none;
       border-radius: 12px;
       padding: 11px 16px;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.95rem;
       cursor: pointer;
       transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -220,18 +245,23 @@
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: linear-gradient(120deg, #067a69, #118f7c);
       color: #fff;
     }
 
     .btn-primary:hover {
-      background: var(--primary-dark);
+      background: linear-gradient(120deg, #055f53, #0e7a6a);
     }
 
     .btn-outline {
-      background: white;
+      background: #ffffff;
       border: 1px solid var(--border);
       color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      border-color: #9db9d6;
+      box-shadow: 0 8px 20px rgba(61, 102, 144, 0.14);
     }
 
     .file-chip {
@@ -243,6 +273,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 12px 14px;
+      box-shadow: 0 8px 18px rgba(80, 120, 160, 0.1);
     }
 
     .code-box {
@@ -260,6 +291,31 @@
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
+    }
+
+    .text-area {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      color: var(--text-main);
+      background: #fff;
+    }
+
+    .text-preview {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fbfdff;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.92rem;
+      color: #1f3551;
+      max-height: 160px;
+      overflow: auto;
     }
 
     .qr-wrap {
@@ -422,6 +478,14 @@
         </div>
         <input id="fileInput" type="file" hidden>
 
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Or share plain text:</p>
+          <textarea id="textInput" class="text-area" placeholder="Type or paste text here..."></textarea>
+          <div class="row" style="margin-top: 10px;">
+            <button id="prepareTextBtn" class="btn btn-outline" type="button">Share this text</button>
+          </div>
+        </div>
+
         <p class="footer-note">Tip: Open this on your phone and laptop to transfer instantly.</p>
       </div>
 
@@ -487,6 +551,10 @@
         <h2>Device connected ✅</h2>
         <p class="muted">Your peer is online. Start the transfer when ready.</p>
         <div id="connectedSizeWarning" class="size-warning" style="display: none;"></div>
+        <div id="connectedTextPanel" style="display: none;">
+          <p class="muted" style="margin-bottom: 8px;">Text preview:</p>
+          <div id="connectedTextPreview" class="text-preview"></div>
+        </div>
         <div class="file-chip">
           <div>
             <div id="connectedFileName">-</div>
@@ -508,6 +576,13 @@
       <div id="completedScreen" class="screen">
         <h2>Transfer completed 🎉</h2>
         <p id="completedText" class="ok-text">File transfer completed successfully.</p>
+        <div id="receivedTextPanel" style="display: none;">
+          <p class="muted" style="margin-bottom: 8px;">Received text:</p>
+          <div id="receivedTextPreview" class="text-preview"></div>
+          <div class="row" style="margin-top: 10px;">
+            <button id="copyReceivedTextBtn" class="btn btn-outline" type="button">Copy text</button>
+          </div>
+        </div>
         <div class="row">
           <button id="sendAnotherBtn" class="btn btn-outline" type="button">Send another file</button>
         </div>
@@ -548,11 +623,15 @@
 
       const el = {
         fileInput: document.getElementById("fileInput"),
+        textInput: document.getElementById("textInput"),
+        prepareTextBtn: document.getElementById("prepareTextBtn"),
         dropzone: document.getElementById("dropzone"),
         fileName: document.getElementById("fileName"),
         fileSize: document.getElementById("fileSize"),
         connectedFileName: document.getElementById("connectedFileName"),
         connectedFileSize: document.getElementById("connectedFileSize"),
+        connectedTextPanel: document.getElementById("connectedTextPanel"),
+        connectedTextPreview: document.getElementById("connectedTextPreview"),
         shareLink: document.getElementById("shareLink"),
         qrCode: document.getElementById("qrCode"),
         waitingShareLink: document.getElementById("waitingShareLink"),
@@ -573,6 +652,9 @@
         progressPercent: document.getElementById("progressPercent"),
         transferText: document.getElementById("transferText"),
         completedText: document.getElementById("completedText"),
+        receivedTextPanel: document.getElementById("receivedTextPanel"),
+        receivedTextPreview: document.getElementById("receivedTextPreview"),
+        copyReceivedTextBtn: document.getElementById("copyReceivedTextBtn"),
         connectionBadge: document.getElementById("connectionBadge"),
         connectionLabel: document.getElementById("connectionLabel"),
         errorBox: document.getElementById("errorBox"),
@@ -590,6 +672,8 @@
       let fileMeta = null;
       let receiveBuffers = [];
       let receiveBytes = 0;
+      let transferMode = "file";
+      let selectedText = "";
       let shareOrigin = window.location.origin;
       let wsOverrideUrl = "";
       let runtimeIceServers = DEFAULT_ICE_SERVERS;
@@ -711,6 +795,14 @@
             node.classList.add(tone);
           }
         });
+      }
+
+      function setModeUi() {
+        const isText = transferMode === "text";
+        el.sendBtn.textContent = isText ? "Send text" : "Start transfer";
+        el.connectedTextPanel.style.display = isText ? "block" : "none";
+        el.connectedSizeWarning.style.display = isText ? "none" : el.connectedSizeWarning.style.display;
+        el.waitingSizeWarning.style.display = isText ? "none" : el.waitingSizeWarning.style.display;
       }
 
       function setProgress(percent, text) {
@@ -863,7 +955,20 @@
 
         if (msg.type === "file-end") {
           completeReceive();
+          return;
         }
+
+        if (msg.type === "text-share") {
+          completeTextReceive(typeof msg.text === "string" ? msg.text : "");
+        }
+      }
+
+      function completeTextReceive(text) {
+        playTone("complete");
+        el.receivedTextPanel.style.display = "block";
+        el.receivedTextPreview.textContent = text || "(empty text)";
+        el.completedText.textContent = "Text received successfully.";
+        setState(AppState.COMPLETED);
       }
 
       function completeReceive() {
@@ -1068,6 +1173,27 @@
         el.completedText.textContent = `Sent ${selectedFile.name} (${formatSize(selectedFile.size)}) successfully.`;
       }
 
+      function sendText() {
+        if (!dataChannel || dataChannel.readyState !== "open") {
+          showError("Data channel is not ready.");
+          return;
+        }
+
+        playTone("start");
+        setState(AppState.TRANSFERRING);
+        setProgress(100, "Sending text...");
+
+        dataChannel.send(JSON.stringify({
+          type: "text-share",
+          text: selectedText
+        }));
+
+        playTone("complete");
+        el.receivedTextPanel.style.display = "none";
+        el.completedText.textContent = "Text sent successfully.";
+        setState(AppState.COMPLETED);
+      }
+
       async function autoCopy(text) {
         try {
           await navigator.clipboard.writeText(text);
@@ -1108,7 +1234,9 @@
         if (!file) return;
 
         clearError();
+        transferMode = "file";
         selectedFile = file;
+        selectedText = "";
 
         if (!roomId) {
           roomId = makeRoomId();
@@ -1127,6 +1255,7 @@
         el.connectedFileName.textContent = selectedFile.name;
         el.connectedFileSize.textContent = formatSize(selectedFile.size);
         updateFileSizeWarning(selectedFile.size);
+        setModeUi();
 
         el.shareLink.textContent = shareUrl;
         el.waitingShareLink.textContent = shareUrl;
@@ -1138,6 +1267,50 @@
 
         setState(AppState.WAITING);
 
+        createPeerConnection();
+        connectSignal();
+      }
+
+      async function onSelectText(text) {
+        const trimmed = (text || "").trim();
+        if (!trimmed) {
+          showError("Please type or paste some text first.");
+          return;
+        }
+
+        clearError();
+        transferMode = "text";
+        selectedFile = null;
+        selectedText = trimmed;
+
+        if (!roomId) {
+          roomId = makeRoomId();
+          isSender = true;
+          history.replaceState({}, "", `/room/${roomId}`);
+        }
+
+        shareOrigin = normalizeShareOrigin(el.shareAddressInput.value || localStorage.getItem("quickdropShareAddress") || window.location.origin);
+        el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
+        updateShareWarning();
+
+        const shareUrl = makeShareUrl(roomId);
+        const chars = selectedText.length;
+        el.fileName.textContent = "Text message";
+        el.fileSize.textContent = `${chars} characters`;
+        el.connectedFileName.textContent = "Text message";
+        el.connectedFileSize.textContent = `${chars} characters`;
+        el.connectedTextPreview.textContent = selectedText;
+
+        el.shareLink.textContent = shareUrl;
+        el.waitingShareLink.textContent = shareUrl;
+        el.roomLabel.textContent = roomId;
+
+        renderQr(shareUrl);
+        setModeUi();
+        setState(AppState.FILE_SELECTED);
+        await autoCopy(shareUrl);
+
+        setState(AppState.WAITING);
         createPeerConnection();
         connectSignal();
       }
@@ -1197,7 +1370,19 @@
         });
 
         el.sendBtn.addEventListener("click", () => {
-          sendFile();
+          if (transferMode === "text") {
+            sendText();
+          } else {
+            sendFile();
+          }
+        });
+
+        el.prepareTextBtn.addEventListener("click", () => {
+          onSelectText(el.textInput.value);
+        });
+
+        el.copyReceivedTextBtn.addEventListener("click", () => {
+          autoCopy(el.receivedTextPreview.textContent || "");
         });
 
         el.sendAnotherBtn.addEventListener("click", () => {
