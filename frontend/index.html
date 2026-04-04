@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickDrop - Peer to Peer File Sharing</title>
+  <style>
+    :root {
+      --bg-a: #f2f7ff;
+      --bg-b: #e9fff6;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --text-main: #0f1c2e;
+      --text-muted: #5e6b7e;
+      --primary: #0d7f6f;
+      --primary-dark: #085f53;
+      --accent: #ff935c;
+      --border: #d7e4f2;
+      --danger: #cb3f5b;
+      --ok: #1f9d62;
+      --shadow: 0 28px 80px rgba(19, 54, 84, 0.18);
+      --radius: 22px;
+      --duration: 340ms;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      color: var(--text-main);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(13, 127, 111, 0.15), transparent 42%),
+        radial-gradient(circle at 90% 20%, rgba(255, 147, 92, 0.22), transparent 40%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b));
+      overflow-x: hidden;
+    }
+
+    .orb {
+      position: fixed;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      filter: blur(30px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .orb.one {
+      left: -40px;
+      top: 8%;
+      background: #8fd7ff;
+    }
+
+    .orb.two {
+      right: -70px;
+      bottom: 6%;
+      background: #ffd0b8;
+      animation-delay: -2.5s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-14px) translateX(8px); }
+    }
+
+    .card {
+      width: min(760px, 100%);
+      min-height: 540px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 1;
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      font-size: 1.1rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #b2becf;
+      margin-right: 8px;
+      transition: background var(--duration) ease;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .status-inline {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .status-inline.ok .dot {
+      background: var(--ok);
+      box-shadow: 0 0 0 5px rgba(31, 157, 98, 0.14);
+    }
+
+    .status-inline.warn .dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 5px rgba(255, 147, 92, 0.16);
+    }
+
+    .status-inline.err .dot {
+      background: var(--danger);
+      box-shadow: 0 0 0 5px rgba(203, 63, 91, 0.12);
+    }
+
+    .screens {
+      position: relative;
+      min-height: 470px;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition:
+        opacity var(--duration) ease,
+        transform var(--duration) ease;
+      display: grid;
+      align-content: start;
+      gap: 16px;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      line-height: 1.25;
+      margin-top: 12px;
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .dropzone {
+      margin-top: 10px;
+      border: 2px dashed #aac7df;
+      border-radius: 18px;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(13, 127, 111, 0.06), rgba(255, 147, 92, 0.06));
+      transition: border-color var(--duration) ease, transform var(--duration) ease;
+      cursor: pointer;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragging {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(13, 127, 111, 0.2);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .file-chip {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .code-box {
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      border: 1px solid var(--border);
+      background: #f8fbff;
+      border-radius: 12px;
+      padding: 12px;
+      word-break: break-all;
+      font-size: 0.88rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .qr-wrap {
+      width: 180px;
+      height: 180px;
+      border-radius: 14px;
+      background: white;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+
+    .progress-shell {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: #d7e4f2;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #0d7f6f, #40b48f);
+      transition: width 140ms linear;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      right: -18px;
+      top: 0;
+      width: 18px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.35);
+      filter: blur(5px);
+      animation: shine 1.2s linear infinite;
+    }
+
+    @keyframes shine {
+      from { transform: translateX(0); }
+      to { transform: translateX(18px); }
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: #edf7ff;
+      padding: 6px 10px;
+      color: #255173;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .ok-text {
+      color: var(--ok);
+      font-weight: 600;
+    }
+
+    .error-box {
+      background: #fff1f4;
+      border: 1px solid #ffccd7;
+      color: #8f1d38;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .error-box.show {
+      display: block;
+    }
+
+    .size-warning {
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #ffe2ab;
+      background: #fff7e8;
+      color: #7f4f00;
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .size-warning.ok {
+      border-color: #cfe9da;
+      background: #eefaf3;
+      color: #1d6b4c;
+    }
+
+    .size-warning.risky {
+      border-color: #ffd5c7;
+      background: #fff2ee;
+      color: #8a2f1a;
+    }
+
+    .footer-note {
+      margin-top: 6px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 720px) {
+      .card {
+        min-height: 640px;
+        padding: 20px;
+      }
+
+      .screens {
+        min-height: 570px;
+      }
+
+      .qr-wrap {
+        width: 160px;
+        height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+
+  <main class="card">
+    <div class="topbar">
+      <div class="brand">QuickDrop</div>
+      <div id="connectionBadge" class="status-inline warn">
+        <span class="dot"></span><span id="connectionLabel">Not connected</span>
+      </div>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <section class="screens">
+      <div id="idleScreen" class="screen active">
+        <h1>Send files directly to nearby devices</h1>
+        <p class="muted">No uploads. No cloud storage. Pure browser-to-browser transfer with WebRTC.</p>
+
+        <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose file or drop file here">
+          <div>
+            <p><strong>Drag & drop</strong> your file here</p>
+            <p class="muted">or click to choose a file</p>
+            <div style="margin-top: 12px;">
+              <span class="pill">Fast P2P transfer</span>
+            </div>
+          </div>
+        </div>
+        <input id="fileInput" type="file" hidden>
+
+        <p class="footer-note">Tip: Open this on your phone and laptop to transfer instantly.</p>
+      </div>
+
+      <div id="selectedScreen" class="screen">
+        <h2>File selected</h2>
+        <div class="file-chip">
+          <div>
+            <div id="fileName">-</div>
+            <div id="fileSize" class="muted">-</div>
+          </div>
+          <span class="pill">Ready</span>
+        </div>
+
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Share address (for other devices):</p>
+          <div class="row">
+            <input id="shareAddressInput" class="code-box" style="flex: 1;" placeholder="Example: 192.168.1.23:8000" />
+            <button id="applyShareAddressBtn" class="btn btn-outline" type="button">Apply</button>
+          </div>
+          <p id="localWarning" class="muted" style="margin-top: 8px;"></p>
+        </div>
+
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Share this link:</p>
+          <div id="shareLink" class="code-box"></div>
+          <div class="row" style="margin-top: 10px;">
+            <button id="copyBtn" class="btn btn-outline" type="button">Copy link</button>
+            <span id="copyStatus" class="muted"></span>
+          </div>
+        </div>
+
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Or scan this QR code:</p>
+          <div id="qrCode" class="qr-wrap"></div>
+        </div>
+      </div>
+
+      <div id="waitingScreen" class="screen">
+        <h2>Waiting for receiver...</h2>
+        <p class="muted">Share the link or QR code with the receiving device.</p>
+        <div class="row">
+          <span class="pill">Room: <span id="roomLabel">-</span></span>
+          <span class="pill" id="waitStatus">Signal channel connecting...</span>
+        </div>
+
+        <div id="waitingSizeWarning" class="size-warning" style="display: none;"></div>
+
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Share this link:</p>
+          <div id="waitingShareLink" class="code-box"></div>
+          <div class="row" style="margin-top: 10px;">
+            <button id="copyWaitingBtn" class="btn btn-outline" type="button">Copy link</button>
+          </div>
+        </div>
+
+        <div>
+          <p class="muted" style="margin-bottom: 8px;">Or scan this QR code:</p>
+          <div id="waitingQrCode" class="qr-wrap"></div>
+        </div>
+      </div>
+
+      <div id="connectedScreen" class="screen">
+        <h2>Device connected ✅</h2>
+        <p class="muted">Your peer is online. Start the transfer when ready.</p>
+        <div id="connectedSizeWarning" class="size-warning" style="display: none;"></div>
+        <div class="file-chip">
+          <div>
+            <div id="connectedFileName">-</div>
+            <div id="connectedFileSize" class="muted">-</div>
+          </div>
+          <button id="sendBtn" class="btn btn-primary" type="button">Start transfer</button>
+        </div>
+      </div>
+
+      <div id="transferringScreen" class="screen">
+        <h2>Transferring...</h2>
+        <p id="transferText" class="muted">Preparing transfer...</p>
+        <div class="progress-shell">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressPercent" class="muted">0%</p>
+      </div>
+
+      <div id="completedScreen" class="screen">
+        <h2>Transfer completed 🎉</h2>
+        <p id="completedText" class="ok-text">File transfer completed successfully.</p>
+        <div class="row">
+          <button id="sendAnotherBtn" class="btn btn-outline" type="button">Send another file</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="row" style="justify-content: flex-end; margin-top: 16px;">
+      <label class="muted" style="display: inline-flex; align-items: center; gap: 8px;">
+        <input id="soundToggle" type="checkbox" checked>
+        Sound effects
+      </label>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    (function () {
+      const AppState = {
+        IDLE: "idle",
+        FILE_SELECTED: "file-selected",
+        WAITING: "waiting",
+        CONNECTED: "connected",
+        TRANSFERRING: "transferring",
+        COMPLETED: "completed"
+      };
+
+      const CHUNK_SIZE = 64 * 1024;
+      const DEFAULT_ICE_SERVERS = [{ urls: ["stun:stun.l.google.com:19302"] }];
+
+      const screens = {
+        [AppState.IDLE]: document.getElementById("idleScreen"),
+        [AppState.FILE_SELECTED]: document.getElementById("selectedScreen"),
+        [AppState.WAITING]: document.getElementById("waitingScreen"),
+        [AppState.CONNECTED]: document.getElementById("connectedScreen"),
+        [AppState.TRANSFERRING]: document.getElementById("transferringScreen"),
+        [AppState.COMPLETED]: document.getElementById("completedScreen")
+      };
+
+      const el = {
+        fileInput: document.getElementById("fileInput"),
+        dropzone: document.getElementById("dropzone"),
+        fileName: document.getElementById("fileName"),
+        fileSize: document.getElementById("fileSize"),
+        connectedFileName: document.getElementById("connectedFileName"),
+        connectedFileSize: document.getElementById("connectedFileSize"),
+        shareLink: document.getElementById("shareLink"),
+        qrCode: document.getElementById("qrCode"),
+        waitingShareLink: document.getElementById("waitingShareLink"),
+        waitingQrCode: document.getElementById("waitingQrCode"),
+        waitingSizeWarning: document.getElementById("waitingSizeWarning"),
+        connectedSizeWarning: document.getElementById("connectedSizeWarning"),
+        shareAddressInput: document.getElementById("shareAddressInput"),
+        applyShareAddressBtn: document.getElementById("applyShareAddressBtn"),
+        localWarning: document.getElementById("localWarning"),
+        copyBtn: document.getElementById("copyBtn"),
+        copyWaitingBtn: document.getElementById("copyWaitingBtn"),
+        copyStatus: document.getElementById("copyStatus"),
+        roomLabel: document.getElementById("roomLabel"),
+        waitStatus: document.getElementById("waitStatus"),
+        sendBtn: document.getElementById("sendBtn"),
+        sendAnotherBtn: document.getElementById("sendAnotherBtn"),
+        progressFill: document.getElementById("progressFill"),
+        progressPercent: document.getElementById("progressPercent"),
+        transferText: document.getElementById("transferText"),
+        completedText: document.getElementById("completedText"),
+        connectionBadge: document.getElementById("connectionBadge"),
+        connectionLabel: document.getElementById("connectionLabel"),
+        errorBox: document.getElementById("errorBox"),
+        soundToggle: document.getElementById("soundToggle")
+      };
+
+      let currentState = AppState.IDLE;
+      let socket = null;
+      let peerConnection = null;
+      let dataChannel = null;
+      let selectedFile = null;
+      let roomId = getRoomIdFromPath();
+      let isSender = !roomId;
+      let qrInstance = null;
+      let fileMeta = null;
+      let receiveBuffers = [];
+      let receiveBytes = 0;
+      let shareOrigin = window.location.origin;
+      let wsOverrideUrl = "";
+      let runtimeIceServers = DEFAULT_ICE_SERVERS;
+
+      function setState(newState) {
+        currentState = newState;
+        Object.keys(screens).forEach((stateKey) => {
+          screens[stateKey].classList.toggle("active", stateKey === newState);
+        });
+      }
+
+      function showError(message) {
+        el.errorBox.textContent = message;
+        el.errorBox.classList.add("show");
+      }
+
+      function clearError() {
+        el.errorBox.textContent = "";
+        el.errorBox.classList.remove("show");
+      }
+
+      function updateConnectionStatus(label, type) {
+        el.connectionLabel.textContent = label;
+        el.connectionBadge.classList.remove("ok", "warn", "err");
+        el.connectionBadge.classList.add(type);
+      }
+
+      function getRoomIdFromPath() {
+        const match = window.location.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)$/);
+        return match ? match[1] : "";
+      }
+
+      function makeRoomId() {
+        return Math.random().toString(36).slice(2, 10);
+      }
+
+      function formatSize(bytes) {
+        if (!bytes && bytes !== 0) return "-";
+        const units = ["B", "KB", "MB", "GB"];
+        let size = bytes;
+        let i = 0;
+        while (size >= 1024 && i < units.length - 1) {
+          size /= 1024;
+          i += 1;
+        }
+        return `${size.toFixed(size >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+      }
+
+      function normalizeShareOrigin(value) {
+        let input = (value || "").trim();
+        if (!input) return window.location.origin;
+        if (!/^https?:\/\//i.test(input)) {
+          input = `${window.location.protocol}//${input}`;
+        }
+        try {
+          const url = new URL(input);
+          return url.origin;
+        } catch {
+          return window.location.origin;
+        }
+      }
+
+      function isLocalHost(hostname) {
+        return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+      }
+
+      function getWebSocketUrl(room) {
+        if (wsOverrideUrl) {
+          const encodedRoom = encodeURIComponent(room || "");
+          if (wsOverrideUrl.includes("{room}")) {
+            return wsOverrideUrl.replace("{room}", encodedRoom);
+          }
+          if (/\/ws$/i.test(wsOverrideUrl)) {
+            return `${wsOverrideUrl}/${encodedRoom}`;
+          }
+          if (/\/ws\//i.test(wsOverrideUrl)) {
+            return wsOverrideUrl;
+          }
+          return `${wsOverrideUrl.replace(/\/$/, "")}/ws/${encodedRoom}`;
+        }
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        return `${protocol}://${window.location.host}/ws/${encodeURIComponent(room || "")}`;
+      }
+
+      function makeShareUrl(id) {
+        return `${shareOrigin}/room/${id}`;
+      }
+
+      function updateShareWarning() {
+        const currentHost = new URL(shareOrigin).hostname;
+        if (isLocalHost(currentHost)) {
+          el.localWarning.textContent = "You are sharing localhost. For phone/laptop scanning, set your PC LAN IP (example: 192.168.1.23:8000).";
+        } else {
+          el.localWarning.textContent = "";
+        }
+      }
+
+      function updateFileSizeWarning(fileSizeBytes) {
+        const mb = fileSizeBytes / (1024 * 1024);
+        let message = "";
+        let tone = "";
+
+        if (mb <= 100) {
+          message = "Recommended size: Great choice. This file size should transfer smoothly on most networks.";
+          tone = "ok";
+        } else if (mb <= 500) {
+          message = "Recommended size: Usually okay. Keep both devices awake and on stable internet during transfer.";
+          tone = "";
+        } else {
+          message = "Recommended size: Risky for this version. Large files may fail if network drops (no resume yet).";
+          tone = "risky";
+        }
+
+        [el.waitingSizeWarning, el.connectedSizeWarning].forEach((node) => {
+          node.style.display = "block";
+          node.textContent = message;
+          node.classList.remove("ok", "risky");
+          if (tone) {
+            node.classList.add(tone);
+          }
+        });
+      }
+
+      function setProgress(percent, text) {
+        const safe = Math.max(0, Math.min(100, percent));
+        el.progressFill.style.width = `${safe}%`;
+        el.progressPercent.textContent = `${safe.toFixed(1)}%`;
+        if (text) {
+          el.transferText.textContent = text;
+        }
+      }
+
+      function playTone(kind) {
+        if (!el.soundToggle.checked) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+        if (kind === "start") {
+          osc.frequency.setValueAtTime(540, now);
+          osc.frequency.exponentialRampToValueAtTime(760, now + 0.16);
+        } else {
+          osc.frequency.setValueAtTime(620, now);
+          osc.frequency.exponentialRampToValueAtTime(980, now + 0.24);
+        }
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.07, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+
+        osc.start(now);
+        osc.stop(now + 0.3);
+
+        osc.onended = () => ctx.close();
+      }
+
+      function createPeerConnection() {
+        if (peerConnection) {
+          peerConnection.close();
+        }
+
+        peerConnection = new RTCPeerConnection({ iceServers: runtimeIceServers });
+
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            sendSignalMessage({
+              type: "ice-candidate",
+              candidate: event.candidate
+            });
+          }
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+          const state = peerConnection.connectionState;
+          if (state === "connected") {
+            updateConnectionStatus("WebRTC connected", "ok");
+          } else if (state === "failed" || state === "disconnected") {
+            updateConnectionStatus("Connection interrupted", "err");
+            showError("Connection failed or interrupted. Please retry.");
+          } else {
+            updateConnectionStatus(`Peer: ${state}`, "warn");
+          }
+        };
+
+        if (!isSender) {
+          peerConnection.ondatachannel = (event) => {
+            dataChannel = event.channel;
+            setupDataChannel();
+          };
+        }
+      }
+
+      function setupDataChannel() {
+        if (!dataChannel) return;
+
+        dataChannel.binaryType = "arraybuffer";
+
+        dataChannel.onopen = () => {
+          clearError();
+          updateConnectionStatus("Device connected", "ok");
+          if (isSender) {
+            setState(AppState.CONNECTED);
+          } else {
+            setState(AppState.TRANSFERRING);
+            setProgress(0, "Waiting for file metadata...");
+          }
+        };
+
+        dataChannel.onclose = () => {
+          updateConnectionStatus("Data channel closed", "warn");
+        };
+
+        dataChannel.onerror = () => {
+          showError("Data channel error occurred.");
+          updateConnectionStatus("Data channel error", "err");
+        };
+
+        dataChannel.onmessage = async (event) => {
+          if (typeof event.data === "string") {
+            handleControlMessage(event.data);
+            return;
+          }
+
+          const chunk = await normalizeChunk(event.data);
+          receiveBuffers.push(chunk);
+          receiveBytes += chunk.byteLength;
+
+          if (fileMeta && fileMeta.size > 0) {
+            const percent = (receiveBytes / fileMeta.size) * 100;
+            setProgress(percent, `Receiving ${fileMeta.name}...`);
+          }
+        };
+      }
+
+      async function normalizeChunk(data) {
+        if (data instanceof ArrayBuffer) {
+          return new Uint8Array(data);
+        }
+        if (data instanceof Blob) {
+          const buf = await data.arrayBuffer();
+          return new Uint8Array(buf);
+        }
+        if (ArrayBuffer.isView(data)) {
+          return new Uint8Array(data.buffer);
+        }
+        throw new Error("Unsupported chunk type received.");
+      }
+
+      function handleControlMessage(raw) {
+        let msg;
+        try {
+          msg = JSON.parse(raw);
+        } catch (err) {
+          console.warn("Invalid control message", raw);
+          return;
+        }
+
+        if (msg.type === "file-meta") {
+          fileMeta = msg;
+          receiveBuffers = [];
+          receiveBytes = 0;
+          setState(AppState.TRANSFERRING);
+          setProgress(0, `Preparing to receive ${msg.name}`);
+          return;
+        }
+
+        if (msg.type === "file-end") {
+          completeReceive();
+        }
+      }
+
+      function completeReceive() {
+        if (!fileMeta) return;
+
+        const blob = new Blob(receiveBuffers, { type: fileMeta.mime || "application/octet-stream" });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = fileMeta.name || "download";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+
+        URL.revokeObjectURL(url);
+
+        playTone("complete");
+        setState(AppState.COMPLETED);
+        el.completedText.textContent = `Received ${fileMeta.name} (${formatSize(fileMeta.size)})`;
+      }
+
+      function connectSignal() {
+        const wsUrl = getWebSocketUrl(roomId);
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+          updateConnectionStatus("Signaling connected", "ok");
+          sendSignal({ type: "join", room: roomId });
+          el.waitStatus.textContent = "Waiting for receiver...";
+        };
+
+        socket.onmessage = async (event) => {
+          let msg;
+          try {
+            msg = JSON.parse(event.data);
+          } catch {
+            return;
+          }
+
+          if (msg.type === "peer-joined" || msg.type === "ready") {
+            el.waitStatus.textContent = "Receiver joined. Setting up connection...";
+            if (isSender) {
+              await startOffer();
+            }
+            return;
+          }
+
+          if (msg.type === "full") {
+            showError("Room is full. Create a new room and try again.");
+            updateConnectionStatus("Room full", "err");
+            socket.close();
+            return;
+          }
+
+          if (msg.type === "signal" && msg.data && msg.data.type === "offer" && !isSender) {
+            await ensurePeer();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.data.sdp));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            sendSignalMessage({ type: "answer", sdp: answer });
+            return;
+          }
+
+          if (msg.type === "signal" && msg.data && msg.data.type === "answer" && isSender) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.data.sdp));
+            return;
+          }
+
+          if (msg.type === "signal" && msg.data && msg.data.type === "ice-candidate" && msg.data.candidate) {
+            await ensurePeer();
+            try {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(msg.data.candidate));
+            } catch (error) {
+              console.warn("ICE add error", error);
+            }
+            return;
+          }
+
+          if (msg.type === "peer-left") {
+            showError("Peer disconnected.");
+            updateConnectionStatus("Peer left", "warn");
+            if (isSender) {
+              setState(AppState.WAITING);
+            }
+            return;
+          }
+
+          if (msg.type === "error" && msg.message) {
+            showError(msg.message);
+            updateConnectionStatus("Signaling error", "err");
+          }
+        };
+
+        socket.onerror = () => {
+          showError(`Failed to connect to signaling server at ${wsUrl}`);
+          updateConnectionStatus("Signaling error", "err");
+        };
+
+        socket.onclose = () => {
+          updateConnectionStatus("Signaling disconnected", "warn");
+        };
+      }
+
+      function sendSignal(payload) {
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        socket.send(JSON.stringify(payload));
+      }
+
+      function sendSignalMessage(data) {
+        sendSignal({
+          type: "signal",
+          data
+        });
+      }
+
+      async function loadRuntimeConfig() {
+        try {
+          const response = await fetch("/api/config", { cache: "no-store" });
+          if (!response.ok) return;
+
+          const cfg = await response.json();
+
+          if (cfg.publicBaseUrl && typeof cfg.publicBaseUrl === "string") {
+            shareOrigin = normalizeShareOrigin(cfg.publicBaseUrl);
+          }
+
+          if (cfg.wsUrl && typeof cfg.wsUrl === "string") {
+            wsOverrideUrl = cfg.wsUrl;
+          }
+
+          if (Array.isArray(cfg.iceServers) && cfg.iceServers.length > 0) {
+            runtimeIceServers = cfg.iceServers;
+          }
+        } catch {
+          // Keep local defaults when config endpoint is unavailable.
+        }
+      }
+
+      async function ensurePeer() {
+        if (!peerConnection) {
+          createPeerConnection();
+        }
+      }
+
+      async function startOffer() {
+        await ensurePeer();
+
+        if (!dataChannel || dataChannel.readyState === "closed") {
+          dataChannel = peerConnection.createDataChannel("file-transfer", { ordered: true });
+          setupDataChannel();
+        }
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        sendSignalMessage({ type: "offer", sdp: offer });
+      }
+
+      async function sendFile() {
+        if (!selectedFile || !dataChannel || dataChannel.readyState !== "open") {
+          showError("Data channel is not ready.");
+          return;
+        }
+
+        playTone("start");
+        setState(AppState.TRANSFERRING);
+        setProgress(0, `Sending ${selectedFile.name}...`);
+
+        const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+        dataChannel.send(JSON.stringify({
+          type: "file-meta",
+          name: selectedFile.name,
+          size: selectedFile.size,
+          mime: selectedFile.type,
+          chunkSize: CHUNK_SIZE,
+          totalChunks
+        }));
+
+        let offset = 0;
+        let chunkIndex = 0;
+
+        while (offset < selectedFile.size) {
+          const slice = selectedFile.slice(offset, offset + CHUNK_SIZE);
+          const buffer = await slice.arrayBuffer();
+
+          while (dataChannel.bufferedAmount > CHUNK_SIZE * 8) {
+            await new Promise((resolve) => setTimeout(resolve, 8));
+          }
+
+          dataChannel.send(buffer);
+
+          offset += buffer.byteLength;
+          chunkIndex += 1;
+
+          const percent = (offset / selectedFile.size) * 100;
+          setProgress(percent, `Sending chunk ${chunkIndex} / ${totalChunks}`);
+        }
+
+        dataChannel.send(JSON.stringify({ type: "file-end" }));
+
+        playTone("complete");
+        setState(AppState.COMPLETED);
+        el.completedText.textContent = `Sent ${selectedFile.name} (${formatSize(selectedFile.size)}) successfully.`;
+      }
+
+      async function autoCopy(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          el.copyStatus.textContent = "Link copied to clipboard";
+        } catch {
+          el.copyStatus.textContent = "Copy failed. Use the button.";
+        }
+      }
+
+      function renderQr(url) {
+        el.qrCode.innerHTML = "";
+        el.waitingQrCode.innerHTML = "";
+
+        if (typeof QRCode === "undefined") {
+          el.qrCode.textContent = "QR unavailable. Use the link.";
+          el.waitingQrCode.textContent = "QR unavailable. Use the link.";
+          return;
+        }
+
+        qrInstance = new QRCode(el.qrCode, {
+          text: url,
+          width: 180,
+          height: 180,
+          colorDark: "#0f1c2e",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        new QRCode(el.waitingQrCode, {
+          text: url,
+          width: 180,
+          height: 180,
+          colorDark: "#0f1c2e",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+
+      async function onSelectFile(file) {
+        if (!file) return;
+
+        clearError();
+        selectedFile = file;
+
+        if (!roomId) {
+          roomId = makeRoomId();
+          isSender = true;
+          history.replaceState({}, "", `/room/${roomId}`);
+        }
+
+        shareOrigin = normalizeShareOrigin(el.shareAddressInput.value || localStorage.getItem("quickdropShareAddress") || window.location.origin);
+        el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
+        updateShareWarning();
+
+        const shareUrl = makeShareUrl(roomId);
+
+        el.fileName.textContent = selectedFile.name;
+        el.fileSize.textContent = formatSize(selectedFile.size);
+        el.connectedFileName.textContent = selectedFile.name;
+        el.connectedFileSize.textContent = formatSize(selectedFile.size);
+        updateFileSizeWarning(selectedFile.size);
+
+        el.shareLink.textContent = shareUrl;
+        el.waitingShareLink.textContent = shareUrl;
+        el.roomLabel.textContent = roomId;
+
+        renderQr(shareUrl);
+        setState(AppState.FILE_SELECTED);
+        await autoCopy(shareUrl);
+
+        setState(AppState.WAITING);
+
+        createPeerConnection();
+        connectSignal();
+      }
+
+      function initReceiverMode() {
+        updateConnectionStatus("Receiver mode", "warn");
+        el.roomLabel.textContent = roomId;
+        setState(AppState.WAITING);
+        el.waitStatus.textContent = "Joining room...";
+
+        createPeerConnection();
+        connectSignal();
+      }
+
+      function bindEvents() {
+        el.fileInput.addEventListener("change", (event) => {
+          const file = event.target.files && event.target.files[0];
+          onSelectFile(file);
+        });
+
+        el.dropzone.addEventListener("click", () => {
+          el.fileInput.click();
+        });
+
+        el.dropzone.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            el.fileInput.click();
+          }
+        });
+
+        ["dragenter", "dragover"].forEach((name) => {
+          el.dropzone.addEventListener(name, (event) => {
+            event.preventDefault();
+            el.dropzone.classList.add("dragging");
+          });
+        });
+
+        ["dragleave", "drop"].forEach((name) => {
+          el.dropzone.addEventListener(name, () => {
+            el.dropzone.classList.remove("dragging");
+          });
+        });
+
+        el.dropzone.addEventListener("drop", (event) => {
+          event.preventDefault();
+          const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+          onSelectFile(file);
+        });
+
+        el.copyBtn.addEventListener("click", () => {
+          autoCopy(el.shareLink.textContent || "");
+        });
+
+        el.copyWaitingBtn.addEventListener("click", () => {
+          autoCopy(el.waitingShareLink.textContent || "");
+        });
+
+        el.sendBtn.addEventListener("click", () => {
+          sendFile();
+        });
+
+        el.sendAnotherBtn.addEventListener("click", () => {
+          window.location.href = "/";
+        });
+
+        el.applyShareAddressBtn.addEventListener("click", async () => {
+          shareOrigin = normalizeShareOrigin(el.shareAddressInput.value);
+          localStorage.setItem("quickdropShareAddress", el.shareAddressInput.value.trim());
+          el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
+          updateShareWarning();
+
+          if (roomId) {
+            const shareUrl = makeShareUrl(roomId);
+            el.shareLink.textContent = shareUrl;
+            el.waitingShareLink.textContent = shareUrl;
+            renderQr(shareUrl);
+            await autoCopy(shareUrl);
+          }
+        });
+      }
+
+      async function boot() {
+        await loadRuntimeConfig();
+        bindEvents();
+
+        if (roomId) {
+          isSender = false;
+          initReceiverMode();
+        } else {
+          isSender = true;
+          shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
+          el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
+          updateShareWarning();
+          updateConnectionStatus("Select a file to start", "warn");
+          setState(AppState.IDLE);
+        }
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>
