@@ -462,6 +462,18 @@
       background: rgba(255, 255, 255, 0.78);
     }
 
+    .mode-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .mode-btn {
+      width: 100%;
+      padding: 12px 14px;
+    }
+
     @media (max-width: 720px) {
       .card {
         padding: 18px;
@@ -524,6 +536,11 @@
       <div id="idleScreen" class="screen active">
         <h1>Send files directly to nearby devices</h1>
         <p class="muted">No uploads. No cloud storage. Pure browser-to-browser transfer with WebRTC.</p>
+
+        <div class="mode-row">
+          <button id="sendModeBtn" class="btn btn-outline mode-btn" type="button">Send</button>
+          <button id="receiveModeBtn" class="btn btn-primary mode-btn" type="button">Receive</button>
+        </div>
 
         <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose file or drop file here">
           <div>
@@ -685,6 +702,8 @@
         fileInput: document.getElementById("fileInput"),
         textInput: document.getElementById("textInput"),
         prepareTextBtn: document.getElementById("prepareTextBtn"),
+        sendModeBtn: document.getElementById("sendModeBtn"),
+        receiveModeBtn: document.getElementById("receiveModeBtn"),
         dropzone: document.getElementById("dropzone"),
         fileName: document.getElementById("fileName"),
         fileSize: document.getElementById("fileSize"),
@@ -729,7 +748,8 @@
       let dataChannel = null;
       let selectedFile = null;
       let roomId = getRoomIdFromPath();
-      let isSender = !roomId;
+      const requestedMode = getRequestedModeFromQuery();
+      let isSender = requestedMode === "send" ? true : !roomId;
       let qrInstance = null;
       let fileMeta = null;
       let receiveBuffers = [];
@@ -770,6 +790,11 @@
 
       function makeRoomId() {
         return Math.random().toString(36).slice(2, 10);
+      }
+
+      function getRequestedModeFromQuery() {
+        const mode = new URLSearchParams(window.location.search).get("mode");
+        return mode === "send" ? "send" : "";
       }
 
       function formatSize(bytes) {
@@ -824,6 +849,10 @@
         return `${shareOrigin}/room/${id}`;
       }
 
+      function makeSenderShareUrl(id) {
+        return `${makeShareUrl(id)}?mode=send`;
+      }
+
       function parseRoomIdInput(value) {
         const raw = (value || "").trim();
         if (!raw) return "";
@@ -852,6 +881,62 @@
 
         clearError();
         window.location.href = `/room/${encodeURIComponent(parsedRoomId)}`;
+      }
+
+      function closeRealtime() {
+        if (dataChannel) {
+          try {
+            dataChannel.close();
+          } catch {
+            // Ignore close errors.
+          }
+        }
+        dataChannel = null;
+
+        if (peerConnection) {
+          try {
+            peerConnection.close();
+          } catch {
+            // Ignore close errors.
+          }
+        }
+        peerConnection = null;
+
+        if (socket) {
+          try {
+            socket.close();
+          } catch {
+            // Ignore close errors.
+          }
+        }
+        socket = null;
+      }
+
+      function startReceiveMode() {
+        clearError();
+        closeRealtime();
+
+        if (!roomId) {
+          roomId = makeRoomId();
+          history.replaceState({}, "", `/room/${roomId}`);
+        }
+
+        isSender = false;
+        transferMode = "file";
+        selectedFile = null;
+        selectedText = "";
+
+        const senderShareUrl = makeSenderShareUrl(roomId);
+        el.roomLabel.textContent = roomId;
+        el.waitingShareLink.textContent = senderShareUrl;
+        renderQr(senderShareUrl);
+        el.waitStatus.textContent = "Waiting for sender...";
+
+        updateConnectionStatus("Receiver mode", "warn");
+        setState(AppState.WAITING);
+
+        createPeerConnection();
+        connectSignal();
       }
 
       function updateShareWarning() {
@@ -1089,7 +1174,7 @@
         socket.onopen = () => {
           updateConnectionStatus("Signaling connected", "ok");
           sendSignal({ type: "join", room: roomId });
-          el.waitStatus.textContent = "Waiting for receiver...";
+          el.waitStatus.textContent = isSender ? "Waiting for receiver..." : "Waiting for sender...";
         };
 
         socket.onmessage = async (event) => {
@@ -1101,7 +1186,9 @@
           }
 
           if (msg.type === "peer-joined" || msg.type === "ready") {
-            el.waitStatus.textContent = "Receiver joined. Setting up connection...";
+            el.waitStatus.textContent = isSender
+              ? "Receiver joined. Setting up connection..."
+              : "Sender joined. Setting up connection...";
             if (isSender) {
               await startOffer();
             }
@@ -1359,6 +1446,7 @@
 
         setState(AppState.WAITING);
 
+        closeRealtime();
         createPeerConnection();
         connectSignal();
       }
@@ -1403,6 +1491,7 @@
         await autoCopy(shareUrl);
 
         setState(AppState.WAITING);
+        closeRealtime();
         createPeerConnection();
         connectSignal();
       }
@@ -1473,6 +1562,16 @@
           onSelectText(el.textInput.value);
         });
 
+        el.sendModeBtn.addEventListener("click", () => {
+          clearError();
+          updateConnectionStatus("Send mode", "warn");
+          setState(AppState.IDLE);
+        });
+
+        el.receiveModeBtn.addEventListener("click", () => {
+          startReceiveMode();
+        });
+
         el.joinRoomBtn.addEventListener("click", () => {
           joinAsReceiver();
         });
@@ -1513,8 +1612,12 @@
         bindEvents();
 
         if (roomId) {
-          isSender = false;
-          initReceiverMode();
+          if (isSender) {
+            updateConnectionStatus("Send mode", "warn");
+            setState(AppState.IDLE);
+          } else {
+            initReceiverMode();
+          }
         } else {
           isSender = true;
           shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
