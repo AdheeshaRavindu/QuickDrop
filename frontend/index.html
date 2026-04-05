@@ -594,6 +594,29 @@
       border-bottom-color: rgba(31, 79, 133, 0.9);
     }
 
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 0.81rem;
+      color: var(--text-muted);
+    }
+
+    .footer a {
+      color: #1f4f85;
+      text-decoration: none;
+      transition: color 200ms ease;
+    }
+
+    .footer a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
     .mode-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -985,6 +1008,9 @@
       </div>
     </section>
 
+    <div class="footer">
+      <span>Made by <a href="https://www.linkedin.com/in/adheesharavindu/" target="_blank" rel="noopener noreferrer">Adheesh Ravindu</a></span>
+    </div>
   </main>
 
   <div id="shareModal" class="share-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
