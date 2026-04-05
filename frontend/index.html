@@ -562,6 +562,68 @@
       box-shadow: 0 10px 24px rgba(6, 122, 105, 0.24);
     }
 
+    .share-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 18, 32, 0.52);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 30;
+    }
+
+    .share-modal.show {
+      display: flex;
+      animation: fadeIn 180ms ease;
+    }
+
+    .share-dialog {
+      width: min(440px, 100%);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 24px 50px rgba(15, 40, 68, 0.24);
+      padding: 16px;
+      animation: popIn 220ms ease;
+    }
+
+    .share-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .share-opt {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fbff;
+      cursor: pointer;
+      font: inherit;
+      color: var(--text-main);
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    .share-opt:hover {
+      border-color: #9ab8d8;
+      box-shadow: 0 8px 20px rgba(61, 102, 144, 0.12);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popIn {
+      from { transform: translateY(8px) scale(0.98); opacity: 0.6; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
     @media (max-width: 720px) {
       .card {
         padding: 18px;
@@ -684,6 +746,7 @@
           <div id="shareLink" class="code-box"></div>
           <div class="row" style="margin-top: 10px;">
             <button id="copyBtn" class="btn btn-outline" type="button">Copy link</button>
+            <button id="shareBtn" class="btn btn-outline" type="button">Share</button>
             <span id="copyStatus" class="muted"></span>
           </div>
         </div>
@@ -709,6 +772,7 @@
           <div id="waitingShareLink" class="code-box"></div>
           <div class="row" style="margin-top: 10px;">
             <button id="copyWaitingBtn" class="btn btn-outline" type="button">Copy link</button>
+            <button id="shareWaitingBtn" class="btn btn-outline" type="button">Share</button>
           </div>
         </div>
 
@@ -762,6 +826,26 @@
 
   </main>
 
+  <div id="shareModal" class="share-modal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+    <div class="share-dialog">
+      <div class="row" style="justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h2 id="shareModalTitle" style="font-size: 1.2rem;">Share Link</h2>
+          <p class="muted">Choose where you want to share this QuickDrop link.</p>
+        </div>
+        <button id="closeShareModalBtn" class="btn btn-outline" type="button">Close</button>
+      </div>
+      <div class="share-grid">
+        <button class="share-opt" data-share-action="native" type="button">System share</button>
+        <button class="share-opt" data-share-action="whatsapp" type="button">WhatsApp</button>
+        <button class="share-opt" data-share-action="telegram" type="button">Telegram</button>
+        <button class="share-opt" data-share-action="email" type="button">Email</button>
+        <button class="share-opt" data-share-action="sms" type="button">SMS</button>
+        <button class="share-opt" data-share-action="copy" type="button">Copy link</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     (function () {
@@ -809,8 +893,12 @@
         applyShareAddressBtn: document.getElementById("applyShareAddressBtn"),
         localWarning: document.getElementById("localWarning"),
         copyBtn: document.getElementById("copyBtn"),
+        shareBtn: document.getElementById("shareBtn"),
         copyWaitingBtn: document.getElementById("copyWaitingBtn"),
+        shareWaitingBtn: document.getElementById("shareWaitingBtn"),
         copyStatus: document.getElementById("copyStatus"),
+        shareModal: document.getElementById("shareModal"),
+        closeShareModalBtn: document.getElementById("closeShareModalBtn"),
         roomLabel: document.getElementById("roomLabel"),
         waitStatus: document.getElementById("waitStatus"),
         waitingTitle: document.getElementById("waitingTitle"),
@@ -848,6 +936,7 @@
       let shareOrigin = window.location.origin;
       let wsOverrideUrl = "";
       let runtimeIceServers = DEFAULT_ICE_SERVERS;
+      let activeShareLink = "";
 
       function setState(newState) {
         currentState = newState;
@@ -1492,6 +1581,65 @@
         }
       }
 
+      function openShareModal(link) {
+        activeShareLink = (link || "").trim();
+        if (!activeShareLink) {
+          showError("No share link available yet.");
+          return;
+        }
+        el.shareModal.classList.add("show");
+      }
+
+      function closeShareModal() {
+        el.shareModal.classList.remove("show");
+      }
+
+      async function handleShareAction(action) {
+        const link = activeShareLink;
+        if (!link) return;
+
+        const text = `Join my QuickDrop room: ${link}`;
+        const encodedLink = encodeURIComponent(link);
+        const encodedText = encodeURIComponent(text);
+
+        if (action === "native") {
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: "QuickDrop room link",
+                text: "Join my QuickDrop room",
+                url: link
+              });
+            } catch {
+              // Ignore share cancel events.
+            }
+          } else {
+            await autoCopy(link);
+          }
+          closeShareModal();
+          return;
+        }
+
+        if (action === "copy") {
+          await autoCopy(link);
+          closeShareModal();
+          return;
+        }
+
+        const targets = {
+          whatsapp: `https://wa.me/?text=${encodedText}`,
+          telegram: `https://t.me/share/url?url=${encodedLink}&text=${encodeURIComponent("QuickDrop room")}`,
+          email: `mailto:?subject=${encodeURIComponent("QuickDrop room link")}&body=${encodedText}`,
+          sms: `sms:?body=${encodedText}`
+        };
+
+        const targetUrl = targets[action];
+        if (targetUrl) {
+          window.open(targetUrl, "_blank", "noopener,noreferrer");
+          closeShareModal();
+        }
+      }
+
       function renderQr(url) {
         el.qrCode.innerHTML = "";
         el.waitingQrCode.innerHTML = "";
@@ -1666,6 +1814,14 @@
           autoCopy(el.waitingShareLink.textContent || "");
         });
 
+        el.shareBtn.addEventListener("click", () => {
+          openShareModal(el.shareLink.textContent || "");
+        });
+
+        el.shareWaitingBtn.addEventListener("click", () => {
+          openShareModal(el.waitingShareLink.textContent || "");
+        });
+
         el.sendBtn.addEventListener("click", () => {
           if (transferMode === "text") {
             sendText();
@@ -1684,6 +1840,28 @@
 
         el.receiveModeBtn.addEventListener("click", () => {
           startReceiveMode();
+        });
+
+        el.closeShareModalBtn.addEventListener("click", () => {
+          closeShareModal();
+        });
+
+        el.shareModal.addEventListener("click", (event) => {
+          if (event.target === el.shareModal) {
+            closeShareModal();
+          }
+        });
+
+        document.querySelectorAll("[data-share-action]").forEach((button) => {
+          button.addEventListener("click", () => {
+            handleShareAction(button.getAttribute("data-share-action") || "");
+          });
+        });
+
+        window.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeShareModal();
+          }
         });
 
         el.copyReceivedTextBtn.addEventListener("click", () => {
