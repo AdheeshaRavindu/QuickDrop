@@ -905,8 +905,8 @@
       </div>
 
       <div id="connectedScreen" class="screen">
-        <h2>Device connected âœ…</h2>
-        <p class="muted">Your peer is online. Start the transfer when ready.</p>
+        <h2>Device connected</h2>
+        <p class="muted">Your peer is online. Transfer starts automatically.</p>
         <div id="connectedSizeWarning" class="size-warning" style="display: none;"></div>
         <div id="connectedTextPanel" style="display: none;">
           <p class="muted" style="margin-bottom: 8px;">Text preview:</p>
@@ -917,7 +917,6 @@
             <div id="connectedFileName">-</div>
             <div id="connectedFileSize" class="muted">-</div>
           </div>
-          <button id="sendBtn" class="btn btn-primary" type="button">Start transfer</button>
         </div>
       </div>
 
@@ -931,7 +930,7 @@
       </div>
 
       <div id="completedScreen" class="screen">
-        <h2>Transfer completed ðŸŽ‰</h2>
+        <h2>Transfer completed</h2>
         <p id="completedText" class="ok-text">File transfer completed successfully.</p>
         <div id="receivedTextPanel" style="display: none;">
           <p class="muted" style="margin-bottom: 8px;">Received text:</p>
@@ -941,6 +940,7 @@
           </div>
         </div>
         <div class="row">
+          <button id="downloadReceivedBtn" class="btn btn-primary" type="button" style="display: none;">Download file</button>
           <button id="sendAnotherBtn" class="btn btn-outline" type="button">Send another file</button>
         </div>
       </div>
@@ -1031,7 +1031,7 @@
         waitStatus: document.getElementById("waitStatus"),
         waitingTitle: document.getElementById("waitingTitle"),
         waitingSubtitle: document.getElementById("waitingSubtitle"),
-        sendBtn: document.getElementById("sendBtn"),
+        downloadReceivedBtn: document.getElementById("downloadReceivedBtn"),
         sendAnotherBtn: document.getElementById("sendAnotherBtn"),
         progressFill: document.getElementById("progressFill"),
         progressPercent: document.getElementById("progressPercent"),
@@ -1067,6 +1067,9 @@
       let runtimeIceServers = DEFAULT_ICE_SERVERS;
       let activeShareLink = "";
       let activeShareContext = "room";
+      let transferStarted = false;
+      let receivedBlobUrl = "";
+      let receivedFileName = "";
 
       function setState(newState) {
         currentState = newState;
@@ -1232,6 +1235,8 @@
         clearError();
         closeRealtime();
         currentMode = "receive";
+        transferStarted = false;
+        resetReceivedDownload();
         updateModeUi();
 
         if (!roomId) {
@@ -1262,6 +1267,8 @@
         closeRealtime();
         isSender = true;
         currentMode = "send";
+        transferStarted = false;
+        resetReceivedDownload();
         updateModeUi();
         updateConnectionStatus("Send mode", "warn");
         setState(AppState.IDLE);
@@ -1304,10 +1311,18 @@
 
       function setModeUi() {
         const isText = transferMode === "text";
-        el.sendBtn.textContent = isText ? "Send text" : "Start transfer";
         el.connectedTextPanel.style.display = isText ? "block" : "none";
         el.connectedSizeWarning.style.display = isText ? "none" : el.connectedSizeWarning.style.display;
         el.waitingSizeWarning.style.display = isText ? "none" : el.waitingSizeWarning.style.display;
+      }
+
+      function resetReceivedDownload() {
+        if (receivedBlobUrl) {
+          URL.revokeObjectURL(receivedBlobUrl);
+        }
+        receivedBlobUrl = "";
+        receivedFileName = "";
+        el.downloadReceivedBtn.style.display = "none";
       }
 
       function setProgress(percent, text) {
@@ -1396,6 +1411,13 @@
           updateConnectionStatus("Device connected", "ok");
           if (isSender) {
             setState(AppState.CONNECTED);
+            if (!transferStarted) {
+              if (transferMode === "text") {
+                sendText();
+              } else {
+                sendFile();
+              }
+            }
           } else {
             setState(AppState.TRANSFERRING);
             setProgress(0, "Waiting for file metadata...");
@@ -1474,6 +1496,7 @@
 
       function completeTextReceive(text) {
         playTone("complete");
+        resetReceivedDownload();
         el.receivedTextPanel.style.display = "block";
         el.receivedTextPreview.textContent = text || "(empty text)";
         el.completedText.textContent = "Text received successfully.";
@@ -1484,19 +1507,14 @@
         if (!fileMeta) return;
 
         const blob = new Blob(receiveBuffers, { type: fileMeta.mime || "application/octet-stream" });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = fileMeta.name || "download";
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-
-        URL.revokeObjectURL(url);
+        resetReceivedDownload();
+        receivedBlobUrl = URL.createObjectURL(blob);
+        receivedFileName = fileMeta.name || "download";
+        el.downloadReceivedBtn.style.display = "inline-flex";
 
         playTone("complete");
         setState(AppState.COMPLETED);
-        el.completedText.textContent = `Received ${fileMeta.name} (${formatSize(fileMeta.size)})`;
+        el.completedText.textContent = `Received ${fileMeta.name} (${formatSize(fileMeta.size)}). Press Download file.`;
       }
 
       function connectSignal() {
@@ -1651,6 +1669,8 @@
           return;
         }
 
+        transferStarted = true;
+
         playTone("start");
         setState(AppState.TRANSFERRING);
         setProgress(0, `Sending ${selectedFile.name}...`);
@@ -1697,6 +1717,8 @@
           showError("Data channel is not ready.");
           return;
         }
+
+        transferStarted = true;
 
         playTone("start");
         setState(AppState.TRANSFERRING);
@@ -1836,6 +1858,8 @@
 
         clearError();
         currentMode = "send";
+        transferStarted = false;
+        resetReceivedDownload();
         updateModeUi();
         transferMode = "file";
         selectedFile = file;
@@ -1884,6 +1908,8 @@
 
         clearError();
         currentMode = "send";
+        transferStarted = false;
+        resetReceivedDownload();
         updateModeUi();
         transferMode = "text";
         selectedFile = null;
@@ -1990,14 +2016,6 @@
           openShareModal(shareOrigin || window.location.origin, "site");
         });
 
-        el.sendBtn.addEventListener("click", () => {
-          if (transferMode === "text") {
-            sendText();
-          } else {
-            sendFile();
-          }
-        });
-
         el.prepareTextBtn.addEventListener("click", () => {
           onSelectText(el.textInput.value);
         });
@@ -2034,6 +2052,19 @@
 
         el.copyReceivedTextBtn.addEventListener("click", () => {
           autoCopy(el.receivedTextPreview.textContent || "");
+        });
+
+        el.downloadReceivedBtn.addEventListener("click", () => {
+          if (!receivedBlobUrl) {
+            showError("No received file available to download.");
+            return;
+          }
+          const anchor = document.createElement("a");
+          anchor.href = receivedBlobUrl;
+          anchor.download = receivedFileName || "download";
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
         });
 
         el.sendAnotherBtn.addEventListener("click", () => {
