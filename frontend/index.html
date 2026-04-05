@@ -454,24 +454,24 @@
       font-size: 0.85rem;
     }
 
-    .join-box {
-      margin-top: 8px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.78);
-    }
-
     .mode-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 6px;
+      margin: 4px 0 14px;
     }
 
     .mode-btn {
       width: 100%;
       padding: 12px 14px;
+      transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease, color 220ms ease, border-color 220ms ease;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(120deg, #067a69, #118f7c);
+      color: #fff;
+      border: 1px solid transparent;
+      box-shadow: 0 10px 24px rgba(6, 122, 105, 0.24);
     }
 
     @media (max-width: 720px) {
@@ -532,15 +532,15 @@
 
     <div id="errorBox" class="error-box"></div>
 
+    <div class="mode-row" aria-label="Transfer mode">
+      <button id="sendModeBtn" class="btn btn-outline mode-btn" type="button">Send</button>
+      <button id="receiveModeBtn" class="btn btn-outline mode-btn" type="button">Receive</button>
+    </div>
+
     <section class="screens">
       <div id="idleScreen" class="screen active">
         <h1>Send files directly to nearby devices</h1>
         <p class="muted">No uploads. No cloud storage. Pure browser-to-browser transfer with WebRTC.</p>
-
-        <div class="mode-row">
-          <button id="sendModeBtn" class="btn btn-outline mode-btn" type="button">Send</button>
-          <button id="receiveModeBtn" class="btn btn-primary mode-btn" type="button">Receive</button>
-        </div>
 
         <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose file or drop file here">
           <div>
@@ -558,14 +558,6 @@
           <textarea id="textInput" class="text-area" placeholder="Type or paste text here..."></textarea>
           <div class="row" style="margin-top: 10px;">
             <button id="prepareTextBtn" class="btn btn-outline" type="button">Share this text</button>
-          </div>
-        </div>
-
-        <div class="join-box">
-          <p class="muted" style="margin-bottom: 8px;">Receive from another device:</p>
-          <div class="row">
-            <input id="receiveRoomInput" class="code-box" style="flex: 1;" placeholder="Paste room link or code" />
-            <button id="joinRoomBtn" class="btn btn-primary" type="button">Receive</button>
           </div>
         </div>
 
@@ -607,8 +599,8 @@
       </div>
 
       <div id="waitingScreen" class="screen">
-        <h2>Waiting for receiver...</h2>
-        <p class="muted">Share the link or QR code with the receiving device.</p>
+        <h2 id="waitingTitle">Waiting for receiver...</h2>
+        <p id="waitingSubtitle" class="muted">Share the link or QR code with the receiving device.</p>
         <div class="row">
           <span class="pill">Room: <span id="roomLabel">-</span></span>
           <span class="pill" id="waitStatus">Signal channel connecting...</span>
@@ -723,10 +715,10 @@
         copyBtn: document.getElementById("copyBtn"),
         copyWaitingBtn: document.getElementById("copyWaitingBtn"),
         copyStatus: document.getElementById("copyStatus"),
-        receiveRoomInput: document.getElementById("receiveRoomInput"),
-        joinRoomBtn: document.getElementById("joinRoomBtn"),
         roomLabel: document.getElementById("roomLabel"),
         waitStatus: document.getElementById("waitStatus"),
+        waitingTitle: document.getElementById("waitingTitle"),
+        waitingSubtitle: document.getElementById("waitingSubtitle"),
         sendBtn: document.getElementById("sendBtn"),
         sendAnotherBtn: document.getElementById("sendAnotherBtn"),
         progressFill: document.getElementById("progressFill"),
@@ -755,6 +747,7 @@
       let receiveBuffers = [];
       let receiveBytes = 0;
       let transferMode = "file";
+      let currentMode = isSender ? "send" : "receive";
       let selectedText = "";
       let shareOrigin = window.location.origin;
       let wsOverrideUrl = "";
@@ -765,6 +758,20 @@
         Object.keys(screens).forEach((stateKey) => {
           screens[stateKey].classList.toggle("active", stateKey === newState);
         });
+      }
+
+      function updateModeUi() {
+        const sendActive = currentMode === "send";
+        el.sendModeBtn.classList.toggle("active", sendActive);
+        el.receiveModeBtn.classList.toggle("active", !sendActive);
+
+        if (sendActive) {
+          el.waitingTitle.textContent = "Waiting for receiver...";
+          el.waitingSubtitle.textContent = "Share the link or QR code with the receiving device.";
+        } else {
+          el.waitingTitle.textContent = "Waiting for sender...";
+          el.waitingSubtitle.textContent = "Share this QR/link to the sender device, then receive file or text here.";
+        }
       }
 
       function showError(message) {
@@ -853,36 +860,6 @@
         return `${makeShareUrl(id)}?mode=send`;
       }
 
-      function parseRoomIdInput(value) {
-        const raw = (value || "").trim();
-        if (!raw) return "";
-
-        const directMatch = raw.match(/^[a-zA-Z0-9_-]+$/);
-        if (directMatch) {
-          return raw;
-        }
-
-        try {
-          const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-          const parsedUrl = new URL(normalized);
-          const pathMatch = parsedUrl.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)$/);
-          return pathMatch ? pathMatch[1] : "";
-        } catch {
-          return "";
-        }
-      }
-
-      function joinAsReceiver() {
-        const parsedRoomId = parseRoomIdInput(el.receiveRoomInput.value);
-        if (!parsedRoomId) {
-          showError("Enter a valid room link or room code.");
-          return;
-        }
-
-        clearError();
-        window.location.href = `/room/${encodeURIComponent(parsedRoomId)}`;
-      }
-
       function closeRealtime() {
         if (dataChannel) {
           try {
@@ -915,6 +892,8 @@
       function startReceiveMode() {
         clearError();
         closeRealtime();
+        currentMode = "receive";
+        updateModeUi();
 
         if (!roomId) {
           roomId = makeRoomId();
@@ -937,6 +916,16 @@
 
         createPeerConnection();
         connectSignal();
+      }
+
+      function switchToSendMode() {
+        clearError();
+        closeRealtime();
+        isSender = true;
+        currentMode = "send";
+        updateModeUi();
+        updateConnectionStatus("Send mode", "warn");
+        setState(AppState.IDLE);
       }
 
       function updateShareWarning() {
@@ -1413,6 +1402,8 @@
         if (!file) return;
 
         clearError();
+        currentMode = "send";
+        updateModeUi();
         transferMode = "file";
         selectedFile = file;
         selectedText = "";
@@ -1459,6 +1450,8 @@
         }
 
         clearError();
+        currentMode = "send";
+        updateModeUi();
         transferMode = "text";
         selectedFile = null;
         selectedText = trimmed;
@@ -1497,6 +1490,8 @@
       }
 
       function initReceiverMode() {
+        currentMode = "receive";
+        updateModeUi();
         updateConnectionStatus("Receiver mode", "warn");
         el.roomLabel.textContent = roomId;
         setState(AppState.WAITING);
@@ -1563,24 +1558,11 @@
         });
 
         el.sendModeBtn.addEventListener("click", () => {
-          clearError();
-          updateConnectionStatus("Send mode", "warn");
-          setState(AppState.IDLE);
+          switchToSendMode();
         });
 
         el.receiveModeBtn.addEventListener("click", () => {
           startReceiveMode();
-        });
-
-        el.joinRoomBtn.addEventListener("click", () => {
-          joinAsReceiver();
-        });
-
-        el.receiveRoomInput.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            joinAsReceiver();
-          }
         });
 
         el.copyReceivedTextBtn.addEventListener("click", () => {
@@ -1610,11 +1592,11 @@
       async function boot() {
         await loadRuntimeConfig();
         bindEvents();
+        updateModeUi();
 
         if (roomId) {
           if (isSender) {
-            updateConnectionStatus("Send mode", "warn");
-            setState(AppState.IDLE);
+            switchToSendMode();
           } else {
             initReceiverMode();
           }
