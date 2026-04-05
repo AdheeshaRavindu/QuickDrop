@@ -439,8 +439,13 @@
       border: 1px solid var(--border);
       display: grid;
       place-items: center;
+      margin: 0 auto;
       padding: 0;
       overflow: hidden;
+    }
+
+    .qr-section {
+      text-align: center;
     }
 
     .qr-wrap canvas,
@@ -873,7 +878,7 @@
           </div>
         </div>
 
-        <div>
+        <div class="qr-section">
           <p class="muted" style="margin-bottom: 8px;">Or scan this QR code:</p>
           <div id="qrCode" class="qr-wrap"></div>
         </div>
@@ -898,7 +903,7 @@
           </div>
         </div>
 
-        <div>
+        <div class="qr-section">
           <p class="muted" style="margin-bottom: 8px;">Or scan this QR code:</p>
           <div id="waitingQrCode" class="qr-wrap"></div>
         </div>
