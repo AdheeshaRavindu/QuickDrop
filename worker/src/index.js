@@ -39,19 +39,63 @@ function wsTemplateFromRequest(request) {
   return `${wsProto}//${url.host}/ws/{room}`;
 }
 
-function withHeader(response, name, value) {
+function isHtmlResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  return contentType.includes("text/html");
+}
+
+const ROOM_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+const MAX_SIGNAL_PAYLOAD_BYTES = 32 * 1024;
+
+function isValidRoomId(roomId) {
+  return ROOM_ID_PATTERN.test(roomId);
+}
+
+function securityCsp() {
+  return [
+    "default-src 'self'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'",
+    "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' data: blob:",
+    "connect-src 'self' ws: wss:",
+    "worker-src 'self' blob:",
+    "form-action 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
+function applySecurityHeaders(response, { isRoomPage = false } = {}) {
   const headers = new Headers(response.headers);
-  headers.set(name, value);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("x-frame-options", "DENY");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set(
+    "permissions-policy",
+    "accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+  );
+  headers.set("cross-origin-opener-policy", "same-origin");
+  headers.set("cross-origin-resource-policy", "same-origin");
+  headers.set("x-dns-prefetch-control", "off");
+
+  if (headers.get("content-security-policy") === null) {
+    headers.set("content-security-policy", securityCsp());
+  }
+
+  if (isRoomPage) {
+    headers.set("x-robots-tag", "noindex,follow");
+  }
+
+  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains; preload");
+
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
   });
-}
-
-function isHtmlResponse(response) {
-  const contentType = response.headers.get("content-type") || "";
-  return contentType.includes("text/html");
 }
 
 export default {
@@ -64,23 +108,27 @@ export default {
         wsUrl: env.PUBLIC_WS_URL || wsTemplateFromRequest(request),
         iceServers: resolveIceServers(env),
       };
-      return new Response(JSON.stringify(body), {
-        status: 200,
-        headers: { "content-type": "application/json; charset=utf-8" },
-      });
+      return applySecurityHeaders(
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        })
+      );
     }
 
     if (url.pathname === "/health") {
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: { "content-type": "application/json; charset=utf-8" },
-      });
+      return applySecurityHeaders(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        })
+      );
     }
 
     if (url.pathname.startsWith("/ws/")) {
       const roomId = decodeURIComponent(url.pathname.slice(4));
-      if (!roomId) {
-        return new Response("Missing room id", { status: 400 });
+      if (!roomId || !isValidRoomId(roomId)) {
+        return new Response("Invalid room id", { status: 400 });
       }
 
       if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
@@ -95,30 +143,30 @@ export default {
       return stub.fetch(new Request(upstreamUrl.toString(), request));
     }
 
-        // SPA fallback: /room/{id} and unknown app routes should resolve to index.html.
-        const assetResponse = await env.ASSETS.fetch(request);
-        if (assetResponse.status !== 404) {
-          if (request.method === "GET" && url.pathname.startsWith("/room/") && isHtmlResponse(assetResponse)) {
-            return withHeader(assetResponse, "x-robots-tag", "noindex,follow");
-          }
-          return assetResponse;
-        }
+    // SPA fallback: /room/{id} and unknown app routes should resolve to index.html.
+    const assetResponse = await env.ASSETS.fetch(request);
+    const isRoomPage = request.method === "GET" && url.pathname.startsWith("/room/");
 
-        if (request.method === "GET") {
-          // Fetch root asset and return it directly to avoid redirecting /room/{id} -> /.
-          const indexResponse = await env.ASSETS.fetch(new Request(new URL("/", url), request));
-          const headers = new Headers(indexResponse.headers);
-          headers.delete("location");
-          if (url.pathname.startsWith("/room/")) {
-            headers.set("x-robots-tag", "noindex,follow");
-          }
-          return new Response(indexResponse.body, {
-            status: 200,
-            headers,
-          });
-        }
+    if (assetResponse.status !== 404) {
+      if (isHtmlResponse(assetResponse)) {
+        return applySecurityHeaders(assetResponse, { isRoomPage });
+      }
+      return assetResponse;
+    }
 
-        return assetResponse;
+    if (request.method === "GET") {
+      // Fetch root asset and return it directly to avoid redirecting /room/{id} -> /.
+      const indexResponse = await env.ASSETS.fetch(new Request(new URL("/", url), request));
+      const headers = new Headers(indexResponse.headers);
+      headers.delete("location");
+      const fallbackResponse = new Response(indexResponse.body, {
+        status: 200,
+        headers,
+      });
+      return applySecurityHeaders(fallbackResponse, { isRoomPage: url.pathname.startsWith("/room/") });
+    }
+
+    return assetResponse;
   },
 };
 
@@ -165,6 +213,12 @@ export class RoomSignalingDO {
       rawText = new TextDecoder().decode(message);
     }
 
+    if (rawText.length > MAX_SIGNAL_PAYLOAD_BYTES) {
+      ws.send(JSON.stringify({ type: "error", message: "Payload too large" }));
+      ws.close(1009, "Payload too large");
+      return;
+    }
+
     let msg;
     try {
       msg = JSON.parse(rawText);
@@ -179,6 +233,13 @@ export class RoomSignalingDO {
 
     if (msg.type !== "signal") {
       ws.send(JSON.stringify({ type: "error", message: `Unsupported type: ${msg.type || "unknown"}` }));
+      return;
+    }
+
+    const signalType = msg?.data?.type;
+    const allowedSignalTypes = new Set(["offer", "answer", "ice-candidate"]);
+    if (!allowedSignalTypes.has(signalType)) {
+      ws.send(JSON.stringify({ type: "error", message: "Invalid signal type" }));
       return;
     }
 
