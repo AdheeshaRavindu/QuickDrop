@@ -3,7 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickDrop - Peer to Peer File Sharing</title>
+  <title>QuickDrop | Free P2P File And Text Sharing In Browser</title>
+  <meta name="description" content="QuickDrop is a free peer-to-peer file and text sharing app. Transfer between phone and laptop instantly with WebRTC, QR code sharing, and no cloud upload.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#067a69">
+  <meta name="author" content="QuickDrop">
+  <link id="canonicalLink" rel="canonical" href="https://quickdrop-share-production.adheesharavindu001.workers.dev/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="QuickDrop">
+  <meta property="og:title" content="QuickDrop | Free P2P File And Text Sharing In Browser">
+  <meta property="og:description" content="Share files and text directly between devices with WebRTC. No uploads, no account, and QR code based connection.">
+  <meta property="og:url" content="https://quickdrop-share-production.adheesharavindu001.workers.dev/">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuickDrop | Free P2P File And Text Sharing In Browser">
+  <meta name="twitter:description" content="Fast browser-to-browser file and text transfer via QR code and share link.">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "QuickDrop",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web Browser",
+      "url": "https://quickdrop-share-production.adheesharavindu001.workers.dev/",
+      "description": "QuickDrop is a browser-based peer-to-peer file and text sharing app using WebRTC and QR links.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Peer-to-peer file transfer",
+        "Text sharing between devices",
+        "QR code room sharing",
+        "No account required",
+        "No cloud upload"
+      ]
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does QuickDrop transfer files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "QuickDrop uses WebRTC DataChannel to transfer files directly between devices, so data does not pass through cloud storage."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can QuickDrop share text as well as files?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. QuickDrop supports sharing both plain text and files over the same peer-to-peer connection."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install an app to use QuickDrop?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No installation is needed. QuickDrop runs directly in modern web browsers on phone, tablet, and desktop."
+          }
+        }
+      ]
+    }
+  </script>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 
@@ -771,6 +843,31 @@
         } else {
           el.waitingTitle.textContent = "Waiting for sender...";
           el.waitingSubtitle.textContent = "Share this QR/link to the sender device, then receive file or text here.";
+        }
+      }
+
+      function updateSeoMeta() {
+        const canonical = document.getElementById("canonicalLink");
+        const robotsMeta = document.querySelector('meta[name="robots"]');
+        const ogUrlMeta = document.querySelector('meta[property="og:url"]');
+        const isRoomPage = /^\/room\//.test(window.location.pathname);
+        const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+
+        if (canonical) {
+          canonical.setAttribute("href", cleanUrl);
+        }
+
+        if (ogUrlMeta) {
+          ogUrlMeta.setAttribute("content", cleanUrl);
+        }
+
+        if (robotsMeta) {
+          robotsMeta.setAttribute(
+            "content",
+            isRoomPage
+              ? "noindex, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+              : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+          );
         }
       }
 
@@ -1590,6 +1687,7 @@
       }
 
       async function boot() {
+        updateSeoMeta();
         await loadRuntimeConfig();
         bindEvents();
         updateModeUi();
