@@ -197,6 +197,23 @@
       justify-content: flex-end;
     }
 
+    .topbar-share-site {
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text-main);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .topbar-share-site:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(61, 102, 144, 0.16);
+    }
+
     .sound-toggle {
       color: var(--text-muted);
       font-size: 0.9rem;
@@ -670,6 +687,7 @@
     <div class="topbar">
       <div class="brand">QuickDrop</div>
       <div class="topbar-right">
+        <button id="shareSiteBtn" class="topbar-share-site" type="button">Share site</button>
         <label class="sound-toggle">
           <input id="soundToggle" type="checkbox" checked>
           Sound effects
@@ -831,14 +849,19 @@
       <div class="row" style="justify-content: space-between; align-items: flex-start;">
         <div>
           <h2 id="shareModalTitle" style="font-size: 1.2rem;">Share Link</h2>
-          <p class="muted">Choose where you want to share this QuickDrop link.</p>
+            <p id="shareModalSubtitle" class="muted">Choose where you want to share this QuickDrop link.</p>
         </div>
         <button id="closeShareModalBtn" class="btn btn-outline" type="button">Close</button>
       </div>
       <div class="share-grid">
         <button class="share-opt" data-share-action="native" type="button">System share</button>
         <button class="share-opt" data-share-action="whatsapp" type="button">WhatsApp</button>
+        <button class="share-opt" data-share-action="x" type="button">Twitter/X</button>
+        <button class="share-opt" data-share-action="facebook" type="button">Facebook</button>
+        <button class="share-opt" data-share-action="instagram" type="button">Instagram</button>
         <button class="share-opt" data-share-action="telegram" type="button">Telegram</button>
+        <button class="share-opt" data-share-action="linkedin" type="button">LinkedIn</button>
+        <button class="share-opt" data-share-action="reddit" type="button">Reddit</button>
         <button class="share-opt" data-share-action="email" type="button">Email</button>
         <button class="share-opt" data-share-action="sms" type="button">SMS</button>
         <button class="share-opt" data-share-action="copy" type="button">Copy link</button>
@@ -898,6 +921,7 @@
         shareWaitingBtn: document.getElementById("shareWaitingBtn"),
         copyStatus: document.getElementById("copyStatus"),
         shareModal: document.getElementById("shareModal"),
+        shareModalTitle: document.getElementById("shareModalTitle"),
         closeShareModalBtn: document.getElementById("closeShareModalBtn"),
         roomLabel: document.getElementById("roomLabel"),
         waitStatus: document.getElementById("waitStatus"),
@@ -912,10 +936,12 @@
         receivedTextPanel: document.getElementById("receivedTextPanel"),
         receivedTextPreview: document.getElementById("receivedTextPreview"),
         copyReceivedTextBtn: document.getElementById("copyReceivedTextBtn"),
+        shareSiteBtn: document.getElementById("shareSiteBtn"),
         connectionBadge: document.getElementById("connectionBadge"),
         connectionLabel: document.getElementById("connectionLabel"),
         errorBox: document.getElementById("errorBox"),
-        soundToggle: document.getElementById("soundToggle")
+        soundToggle: document.getElementById("soundToggle"),
+        shareModalSubtitle: document.getElementById("shareModalSubtitle")
       };
 
       let currentState = AppState.IDLE;
@@ -937,6 +963,7 @@
       let wsOverrideUrl = "";
       let runtimeIceServers = DEFAULT_ICE_SERVERS;
       let activeShareLink = "";
+      let activeShareContext = "room";
 
       function setState(newState) {
         currentState = newState;
@@ -1581,11 +1608,19 @@
         }
       }
 
-      function openShareModal(link) {
+      function openShareModal(link, context = "room") {
         activeShareLink = (link || "").trim();
         if (!activeShareLink) {
           showError("No share link available yet.");
           return;
+        }
+        activeShareContext = context;
+        if (context === "site") {
+          el.shareModalTitle.textContent = "Share QuickDrop Site";
+          el.shareModalSubtitle.textContent = "Share your QuickDrop website on social media and messaging apps.";
+        } else {
+          el.shareModalTitle.textContent = "Share Room Link";
+          el.shareModalSubtitle.textContent = "Choose where you want to share this QuickDrop room link.";
         }
         el.shareModal.classList.add("show");
       }
@@ -1598,7 +1633,10 @@
         const link = activeShareLink;
         if (!link) return;
 
-        const text = `Join my QuickDrop room: ${link}`;
+        const text = activeShareContext === "site"
+          ? `Try QuickDrop for fast file and text sharing: ${link}`
+          : `Join my QuickDrop room: ${link}`;
+        const title = activeShareContext === "site" ? "QuickDrop site" : "QuickDrop room link";
         const encodedLink = encodeURIComponent(link);
         const encodedText = encodeURIComponent(text);
 
@@ -1606,8 +1644,8 @@
           if (navigator.share) {
             try {
               await navigator.share({
-                title: "QuickDrop room link",
-                text: "Join my QuickDrop room",
+                title,
+                text,
                 url: link
               });
             } catch {
@@ -1626,9 +1664,21 @@
           return;
         }
 
+        if (action === "instagram") {
+          await autoCopy(link);
+          window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+          el.copyStatus.textContent = "Link copied. Paste it into Instagram bio, DM, or story.";
+          closeShareModal();
+          return;
+        }
+
         const targets = {
           whatsapp: `https://wa.me/?text=${encodedText}`,
+          x: `https://twitter.com/intent/tweet?text=${encodedText}`,
+          facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`,
           telegram: `https://t.me/share/url?url=${encodedLink}&text=${encodeURIComponent("QuickDrop room")}`,
+          linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedLink}`,
+          reddit: `https://www.reddit.com/submit?url=${encodedLink}&title=${encodeURIComponent(title)}`,
           email: `mailto:?subject=${encodeURIComponent("QuickDrop room link")}&body=${encodedText}`,
           sms: `sms:?body=${encodedText}`
         };
@@ -1815,11 +1865,15 @@
         });
 
         el.shareBtn.addEventListener("click", () => {
-          openShareModal(el.shareLink.textContent || "");
+          openShareModal(el.shareLink.textContent || "", "room");
         });
 
         el.shareWaitingBtn.addEventListener("click", () => {
-          openShareModal(el.waitingShareLink.textContent || "");
+          openShareModal(el.waitingShareLink.textContent || "", "room");
+        });
+
+        el.shareSiteBtn.addEventListener("click", () => {
+          openShareModal(shareOrigin || window.location.origin, "site");
         });
 
         el.sendBtn.addEventListener("click", () => {
