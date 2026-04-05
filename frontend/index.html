@@ -642,39 +642,143 @@
     }
 
     @media (max-width: 720px) {
+      body {
+        display: block;
+        padding:
+          max(10px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          max(10px, env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+        overflow-y: auto;
+      }
+
+      .orb {
+        display: none;
+      }
+
       .card {
-        padding: 18px;
+        width: 100%;
+        min-height: calc(100dvh - 20px);
+        height: auto;
+        border-radius: 18px;
+        padding: 14px;
+        overflow: visible;
       }
 
       .screens {
-        min-height: 0;
+        min-height: auto;
+        overflow: visible;
+      }
+
+      .screen {
+        position: static;
+        inset: auto;
+        opacity: 1;
+        transform: none;
+        pointer-events: none;
+        display: none;
+      }
+
+      .screen.active {
+        display: grid;
+        pointer-events: auto;
       }
 
       .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
         margin-bottom: 12px;
+      }
+
+      .topbar-right {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+      }
+
+      .brand {
+        font-size: 1.42rem;
       }
 
       h1 {
         margin-top: 4px;
-        font-size: clamp(1.35rem, 6vw, 1.8rem);
+        font-size: clamp(1.25rem, 6.2vw, 1.72rem);
       }
 
       h2 {
-        font-size: 1.4rem;
+        font-size: 1.24rem;
+      }
+
+      .muted,
+      .seo-links,
+      .status-inline {
+        font-size: 0.92rem;
+      }
+
+      .mode-row {
+        gap: 8px;
+        margin: 2px 0 12px;
       }
 
       .dropzone {
-        min-height: 165px;
-        padding: 18px;
+        min-height: 150px;
+        padding: 14px;
+        border-radius: 16px;
       }
 
       .text-area {
-        min-height: 84px;
+        min-height: 110px;
+      }
+
+      .row {
+        gap: 8px;
+      }
+
+      .row .btn {
+        flex: 1 1 auto;
+      }
+
+      .file-chip {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .topbar-share-site,
+      .sound-toggle,
+      .btn,
+      .share-opt {
+        min-height: 44px;
+      }
+
+      .topbar-share-site,
+      .btn,
+      .code-box,
+      .text-area,
+      input,
+      textarea,
+      button {
+        font-size: 16px;
+      }
+
+      .sound-toggle {
+        padding: 9px 12px;
+      }
+
+      .share-dialog {
+        width: 100%;
+        max-height: 85dvh;
+        overflow-y: auto;
+        border-radius: 14px;
+      }
+
+      .share-grid {
+        grid-template-columns: 1fr;
       }
 
       .qr-wrap {
-        width: 132px;
-        height: 132px;
+        width: min(156px, 48vw);
+        height: min(156px, 48vw);
       }
     }
   </style>
@@ -950,14 +1054,13 @@
       let dataChannel = null;
       let selectedFile = null;
       let roomId = getRoomIdFromPath();
-      const requestedMode = getRequestedModeFromQuery();
-      let isSender = requestedMode === "send" ? true : !roomId;
+      let isSender = true;
       let qrInstance = null;
       let fileMeta = null;
       let receiveBuffers = [];
       let receiveBytes = 0;
       let transferMode = "file";
-      let currentMode = isSender ? "send" : "receive";
+      let currentMode = "send";
       let selectedText = "";
       let shareOrigin = window.location.origin;
       let wsOverrideUrl = "";
@@ -1016,6 +1119,10 @@
         el.errorBox.classList.add("show");
       }
 
+      function canShowRuntimeError() {
+        return !(currentMode === "send" && currentState === AppState.IDLE);
+      }
+
       function clearError() {
         el.errorBox.textContent = "";
         el.errorBox.classList.remove("show");
@@ -1034,11 +1141,6 @@
 
       function makeRoomId() {
         return Math.random().toString(36).slice(2, 10);
-      }
-
-      function getRequestedModeFromQuery() {
-        const mode = new URLSearchParams(window.location.search).get("mode");
-        return mode === "send" ? "send" : "";
       }
 
       function formatSize(bytes) {
@@ -1268,7 +1370,9 @@
             updateConnectionStatus("WebRTC connected", "ok");
           } else if (state === "failed" || state === "disconnected") {
             updateConnectionStatus("Connection interrupted", "err");
-            showError("Connection failed or interrupted. Please retry.");
+            if (canShowRuntimeError()) {
+              showError("Connection failed or interrupted. Please retry.");
+            }
           } else {
             updateConnectionStatus(`Peer: ${state}`, "warn");
           }
@@ -1303,7 +1407,9 @@
         };
 
         dataChannel.onerror = () => {
-          showError("Data channel error occurred.");
+          if (canShowRuntimeError()) {
+            showError("Data channel error occurred.");
+          }
           updateConnectionStatus("Data channel error", "err");
         };
 
@@ -1422,7 +1528,9 @@
           }
 
           if (msg.type === "full") {
-            showError("Room is full. Create a new room and try again.");
+            if (canShowRuntimeError()) {
+              showError("Room is full. Create a new room and try again.");
+            }
             updateConnectionStatus("Room full", "err");
             socket.close();
             return;
@@ -1453,7 +1561,9 @@
           }
 
           if (msg.type === "peer-left") {
-            showError("Peer disconnected.");
+            if (canShowRuntimeError()) {
+              showError("Peer disconnected.");
+            }
             updateConnectionStatus("Peer left", "warn");
             if (isSender) {
               setState(AppState.WAITING);
@@ -1462,13 +1572,17 @@
           }
 
           if (msg.type === "error" && msg.message) {
-            showError(msg.message);
+            if (canShowRuntimeError()) {
+              showError(msg.message);
+            }
             updateConnectionStatus("Signaling error", "err");
           }
         };
 
         socket.onerror = () => {
-          showError(`Failed to connect to signaling server at ${wsUrl}`);
+          if (canShowRuntimeError()) {
+            showError(`Failed to connect to signaling server at ${wsUrl}`);
+          }
           updateConnectionStatus("Signaling error", "err");
         };
 
@@ -1946,22 +2060,13 @@
         updateSeoMeta();
         await loadRuntimeConfig();
         bindEvents();
-        updateModeUi();
 
-        if (roomId) {
-          if (isSender) {
-            switchToSendMode();
-          } else {
-            initReceiverMode();
-          }
-        } else {
-          isSender = true;
-          shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
-          el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
-          updateShareWarning();
-          updateConnectionStatus("Select a file to start", "warn");
-          setState(AppState.IDLE);
-        }
+        // Always land in send mode first, regardless of URL room state.
+        shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
+        el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
+        updateShareWarning();
+        switchToSendMode();
+        updateConnectionStatus("Select a file to start", "warn");
       }
 
       boot();
