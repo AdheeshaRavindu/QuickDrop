@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -905,7 +905,7 @@
       </div>
 
       <div id="connectedScreen" class="screen">
-        <h2>Device connected ✅</h2>
+        <h2>Device connected âœ…</h2>
         <p class="muted">Your peer is online. Start the transfer when ready.</p>
         <div id="connectedSizeWarning" class="size-warning" style="display: none;"></div>
         <div id="connectedTextPanel" style="display: none;">
@@ -931,7 +931,7 @@
       </div>
 
       <div id="completedScreen" class="screen">
-        <h2>Transfer completed 🎉</h2>
+        <h2>Transfer completed ðŸŽ‰</h2>
         <p id="completedText" class="ok-text">File transfer completed successfully.</p>
         <div id="receivedTextPanel" style="display: none;">
           <p class="muted" style="margin-bottom: 8px;">Received text:</p>
@@ -2065,8 +2065,15 @@
         shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
         el.shareAddressInput.value = shareOrigin.replace(/^https?:\/\//i, "");
         updateShareWarning();
-        switchToSendMode();
-        updateConnectionStatus("Select a file to start", "warn");
+        const urlParams = new URLSearchParams(window.location.search);
+        const modeSendParam = urlParams.get("mode");
+        
+        if (roomId && modeSendParam !== "send") {
+          startReceiveMode();
+        } else {
+          switchToSendMode();
+          updateConnectionStatus("Select a file to start", "warn");
+        }
       }
 
       boot();
@@ -2074,3 +2081,5 @@
   </script>
 </body>
 </html>
+
+
