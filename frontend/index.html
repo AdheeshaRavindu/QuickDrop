@@ -937,6 +937,7 @@
       <div id="completedScreen" class="screen">
         <h2>Transfer completed</h2>
         <p id="completedText" class="ok-text">File transfer completed successfully.</p>
+        <p id="completedHelp" class="muted">Start another transfer or go back home.</p>
         <div id="receivedTextPanel" style="display: none;">
           <p class="muted" style="margin-bottom: 8px;">Received text:</p>
           <div id="receivedTextPreview" class="text-preview"></div>
@@ -946,7 +947,8 @@
         </div>
         <div class="row">
           <button id="downloadReceivedBtn" class="btn btn-primary" type="button" style="display: none;">Download file</button>
-          <button id="sendAnotherBtn" class="btn btn-outline" type="button">Send another file</button>
+          <button id="sendAnotherBtn" class="btn btn-primary" type="button">Start another transfer</button>
+          <button id="goHomeBtn" class="btn btn-outline" type="button">Go to home</button>
         </div>
       </div>
     </section>
@@ -1042,9 +1044,11 @@
         progressPercent: document.getElementById("progressPercent"),
         transferText: document.getElementById("transferText"),
         completedText: document.getElementById("completedText"),
+        completedHelp: document.getElementById("completedHelp"),
         receivedTextPanel: document.getElementById("receivedTextPanel"),
         receivedTextPreview: document.getElementById("receivedTextPreview"),
         copyReceivedTextBtn: document.getElementById("copyReceivedTextBtn"),
+        goHomeBtn: document.getElementById("goHomeBtn"),
         shareSiteBtn: document.getElementById("shareSiteBtn"),
         connectionBadge: document.getElementById("connectionBadge"),
         connectionLabel: document.getElementById("connectionLabel"),
@@ -1330,6 +1334,36 @@
         el.downloadReceivedBtn.style.display = "none";
       }
 
+      function updateCompletedActions({ showDownload, helperText }) {
+        el.downloadReceivedBtn.style.display = showDownload ? "inline-flex" : "none";
+        el.sendAnotherBtn.classList.toggle("btn-primary", !showDownload);
+        el.sendAnotherBtn.classList.toggle("btn-outline", showDownload);
+        el.downloadReceivedBtn.classList.toggle("btn-primary", showDownload);
+        el.downloadReceivedBtn.classList.toggle("btn-outline", !showDownload);
+        el.completedHelp.textContent = helperText;
+      }
+
+      function startAnotherTransfer() {
+        resetReceivedDownload();
+        closeRealtime();
+        roomId = "";
+        selectedFile = null;
+        selectedText = "";
+        fileMeta = null;
+        receiveBuffers = [];
+        receiveBytes = 0;
+        transferMode = "file";
+        transferStarted = false;
+        el.fileInput.value = "";
+        el.textInput.value = "";
+        el.receivedTextPanel.style.display = "none";
+        if (window.location.pathname !== "/") {
+          history.replaceState({}, "", "/");
+        }
+        switchToSendMode();
+        updateConnectionStatus("Select a file to start", "warn");
+      }
+
       function setProgress(percent, text) {
         const safe = Math.max(0, Math.min(100, percent));
         el.progressFill.style.width = `${safe}%`;
@@ -1505,6 +1539,10 @@
         el.receivedTextPanel.style.display = "block";
         el.receivedTextPreview.textContent = text || "(empty text)";
         el.completedText.textContent = "Text received successfully.";
+        updateCompletedActions({
+          showDownload: false,
+          helperText: "Copy the text if needed, then start another transfer or go to home."
+        });
         setState(AppState.COMPLETED);
       }
 
@@ -1515,11 +1553,14 @@
         resetReceivedDownload();
         receivedBlobUrl = URL.createObjectURL(blob);
         receivedFileName = fileMeta.name || "download";
-        el.downloadReceivedBtn.style.display = "inline-flex";
+        updateCompletedActions({
+          showDownload: true,
+          helperText: "Press Download file, then start another transfer or go to home."
+        });
 
         playTone("complete");
         setState(AppState.COMPLETED);
-        el.completedText.textContent = `Received ${fileMeta.name} (${formatSize(fileMeta.size)}). Press Download file.`;
+        el.completedText.textContent = `Received ${fileMeta.name} (${formatSize(fileMeta.size)}).`;
       }
 
       function connectSignal() {
@@ -1713,6 +1754,10 @@
         dataChannel.send(JSON.stringify({ type: "file-end" }));
 
         playTone("complete");
+        updateCompletedActions({
+          showDownload: false,
+          helperText: "Ready for another transfer? Start another transfer or go to home."
+        });
         setState(AppState.COMPLETED);
         el.completedText.textContent = `Sent ${selectedFile.name} (${formatSize(selectedFile.size)}) successfully.`;
       }
@@ -1737,6 +1782,10 @@
         playTone("complete");
         el.receivedTextPanel.style.display = "none";
         el.completedText.textContent = "Text sent successfully.";
+        updateCompletedActions({
+          showDownload: false,
+          helperText: "Ready for another transfer? Start another transfer or go to home."
+        });
         setState(AppState.COMPLETED);
       }
 
@@ -2073,6 +2122,10 @@
         });
 
         el.sendAnotherBtn.addEventListener("click", () => {
+          startAnotherTransfer();
+        });
+
+        el.goHomeBtn.addEventListener("click", () => {
           window.location.href = "/";
         });
 
