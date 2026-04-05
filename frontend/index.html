@@ -241,7 +241,10 @@
     .brand {
       display: inline-flex;
       align-items: center;
+      gap: 10px;
       min-height: 44px;
+      color: var(--text-main);
+      text-decoration: none;
     }
 
     .brand img {
@@ -249,6 +252,18 @@
       height: 44px;
       width: auto;
       max-width: min(300px, 58vw);
+    }
+
+    .brand-text {
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: 1.65rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .brand:hover .brand-text {
+      color: var(--primary);
     }
 
     .dot {
@@ -766,6 +781,10 @@
         height: 38px;
       }
 
+      .brand-text {
+        font-size: 1.42rem;
+      }
+
       h1 {
         margin-top: 4px;
         font-size: clamp(1.25rem, 6.2vw, 1.72rem);
@@ -854,9 +873,10 @@
 
   <main class="card">
     <div class="topbar">
-      <div class="brand">
+      <a class="brand" href="/" aria-label="QuickDrop home">
         <img src="/assets/Gemini_Generated_Image_hmymfxhmymfxhmym__1_-removebg-preview.png" alt="QuickDrop" decoding="async">
-      </div>
+        <span class="brand-text">QuickDrop</span>
+      </a>
       <div class="topbar-right">
         <button id="shareSiteBtn" class="topbar-share-site highlight-site" type="button">Share site</button>
         <label class="sound-toggle">
