@@ -454,6 +454,14 @@
       font-size: 0.85rem;
     }
 
+    .join-box {
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
     @media (max-width: 720px) {
       .card {
         padding: 18px;
@@ -533,6 +541,14 @@
           <textarea id="textInput" class="text-area" placeholder="Type or paste text here..."></textarea>
           <div class="row" style="margin-top: 10px;">
             <button id="prepareTextBtn" class="btn btn-outline" type="button">Share this text</button>
+          </div>
+        </div>
+
+        <div class="join-box">
+          <p class="muted" style="margin-bottom: 8px;">Receive from another device:</p>
+          <div class="row">
+            <input id="receiveRoomInput" class="code-box" style="flex: 1;" placeholder="Paste room link or code" />
+            <button id="joinRoomBtn" class="btn btn-primary" type="button">Receive</button>
           </div>
         </div>
 
@@ -688,6 +704,8 @@
         copyBtn: document.getElementById("copyBtn"),
         copyWaitingBtn: document.getElementById("copyWaitingBtn"),
         copyStatus: document.getElementById("copyStatus"),
+        receiveRoomInput: document.getElementById("receiveRoomInput"),
+        joinRoomBtn: document.getElementById("joinRoomBtn"),
         roomLabel: document.getElementById("roomLabel"),
         waitStatus: document.getElementById("waitStatus"),
         sendBtn: document.getElementById("sendBtn"),
@@ -804,6 +822,36 @@
 
       function makeShareUrl(id) {
         return `${shareOrigin}/room/${id}`;
+      }
+
+      function parseRoomIdInput(value) {
+        const raw = (value || "").trim();
+        if (!raw) return "";
+
+        const directMatch = raw.match(/^[a-zA-Z0-9_-]+$/);
+        if (directMatch) {
+          return raw;
+        }
+
+        try {
+          const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+          const parsedUrl = new URL(normalized);
+          const pathMatch = parsedUrl.pathname.match(/^\/room\/([a-zA-Z0-9_-]+)$/);
+          return pathMatch ? pathMatch[1] : "";
+        } catch {
+          return "";
+        }
+      }
+
+      function joinAsReceiver() {
+        const parsedRoomId = parseRoomIdInput(el.receiveRoomInput.value);
+        if (!parsedRoomId) {
+          showError("Enter a valid room link or room code.");
+          return;
+        }
+
+        clearError();
+        window.location.href = `/room/${encodeURIComponent(parsedRoomId)}`;
       }
 
       function updateShareWarning() {
@@ -1423,6 +1471,17 @@
 
         el.prepareTextBtn.addEventListener("click", () => {
           onSelectText(el.textInput.value);
+        });
+
+        el.joinRoomBtn.addEventListener("click", () => {
+          joinAsReceiver();
+        });
+
+        el.receiveRoomInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            joinAsReceiver();
+          }
         });
 
         el.copyReceivedTextBtn.addEventListener("click", () => {
