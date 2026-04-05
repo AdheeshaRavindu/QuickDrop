@@ -462,9 +462,8 @@
     .qr-callout {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
       margin-bottom: 10px !important;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 999px;
       color: #0d6f61;
       background: linear-gradient(120deg, rgba(6, 122, 105, 0.12), rgba(242, 154, 98, 0.1));
@@ -473,16 +472,10 @@
       line-height: 1.2;
     }
 
-    .qr-callout::before {
-      content: "Scan";
-      font-size: 0.72rem;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: #0b5f53;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.62);
-      border: 1px solid rgba(6, 122, 105, 0.22);
+    .qr-helper {
+      margin-top: 10px;
+      font-size: 0.84rem;
+      color: #53708a;
     }
 
     .qr-wrap canvas,
@@ -916,8 +909,9 @@
         </div>
 
         <div class="qr-section">
-          <p class="muted qr-callout" style="margin-bottom: 8px;">Or scan this QR code:</p>
+          <p class="muted qr-callout" style="margin-bottom: 8px;">Scan this QR code to connect</p>
           <div id="qrCode" class="qr-wrap"></div>
+          <p class="qr-helper">Open your camera app and point it at this code.</p>
         </div>
       </div>
 
@@ -941,8 +935,9 @@
         </div>
 
         <div class="qr-section">
-          <p class="muted qr-callout" style="margin-bottom: 8px;">Or scan this QR code:</p>
+          <p class="muted qr-callout" style="margin-bottom: 8px;">Scan this QR code to connect</p>
           <div id="waitingQrCode" class="qr-wrap"></div>
+          <p class="qr-helper">Open your camera app and point it at this code.</p>
         </div>
       </div>
 
