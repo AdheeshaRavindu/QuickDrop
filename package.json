@@ -8,6 +8,6 @@
     "seo:check": "powershell -ExecutionPolicy Bypass -File scripts/search-console-indexing-check.ps1"
   },
   "devDependencies": {
-    "wrangler": "^3.84.1"
+    "wrangler": "^4.80.0"
   }
 }
