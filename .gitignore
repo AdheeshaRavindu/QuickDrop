@@ -42,3 +42,6 @@ coverage/
 
 # Local development
 local.workers.js
+
+# Local wiki (not pushed to GitHub)
+wiki/
