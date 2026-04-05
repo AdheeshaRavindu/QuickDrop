@@ -39,6 +39,21 @@ function wsTemplateFromRequest(request) {
   return `${wsProto}//${url.host}/ws/{room}`;
 }
 
+function withHeader(response, name, value) {
+  const headers = new Headers(response.headers);
+  headers.set(name, value);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+function isHtmlResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  return contentType.includes("text/html");
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -83,6 +98,9 @@ export default {
         // SPA fallback: /room/{id} and unknown app routes should resolve to index.html.
         const assetResponse = await env.ASSETS.fetch(request);
         if (assetResponse.status !== 404) {
+          if (request.method === "GET" && url.pathname.startsWith("/room/") && isHtmlResponse(assetResponse)) {
+            return withHeader(assetResponse, "x-robots-tag", "noindex,follow");
+          }
           return assetResponse;
         }
 
@@ -91,6 +109,9 @@ export default {
           const indexResponse = await env.ASSETS.fetch(new Request(new URL("/", url), request));
           const headers = new Headers(indexResponse.headers);
           headers.delete("location");
+          if (url.pathname.startsWith("/room/")) {
+            headers.set("x-robots-tag", "noindex,follow");
+          }
           return new Response(indexResponse.body, {
             status: 200,
             headers,

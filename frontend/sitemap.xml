@@ -5,4 +5,19 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://quickdrop-share-production.adheesharavindu001.workers.dev/peer-to-peer-file-sharing.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://quickdrop-share-production.adheesharavindu001.workers.dev/transfer-files-phone-to-laptop.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://quickdrop-share-production.adheesharavindu001.workers.dev/share-text-between-devices.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>

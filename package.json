@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "seo:check": "powershell -ExecutionPolicy Bypass -File scripts/search-console-indexing-check.ps1"
   },
   "devDependencies": {
     "wrangler": "^3.84.1"
