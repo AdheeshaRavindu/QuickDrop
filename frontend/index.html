@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickDrop | Free P2P File And Text Sharing In Browser</title>
-  <meta name="description" content="QuickDrop is a free peer-to-peer file and text sharing app. Transfer between phone and laptop instantly with WebRTC, QR code sharing, and no cloud upload.">
+  <title>Send Files Instantly Between Devices (QR Code, No Login) | QuickDrop</title>
+  <meta name="description" content="Transfer files instantly between phone and laptop using a QR code. No login, no upload — fast, secure, peer-to-peer file sharing in your browser.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#067a69">
   <meta name="author" content="QuickDrop">
@@ -310,6 +310,8 @@
       inset: 0;
       opacity: 0;
       pointer-events: none;
+      overflow-y: auto;
+      overflow-x: hidden;
       transform: translateY(20px);
       transition:
         opacity var(--duration) ease,
@@ -898,8 +900,8 @@
 
     <section class="screens">
       <div id="idleScreen" class="screen active">
-        <h1>Send files directly to nearby devices</h1>
-        <p class="muted">No uploads. No cloud storage. Pure browser-to-browser transfer with WebRTC.</p>
+        <h1>Send Files Instantly Between Devices</h1>
+        <p class="muted">Transfer files between phone and laptop instantly using QR code. No login, no upload — secure peer-to-peer sharing in your browser.</p>
 
         <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose file or drop file here">
           <div>
