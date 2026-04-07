@@ -318,13 +318,13 @@
       grid-column: span 4;
       border: 1px solid var(--border);
       border-radius: 22px;
-      background: #fff;
       overflow: hidden;
       box-shadow: 0 16px 34px rgba(30, 73, 122, 0.08);
       transition: transform 180ms ease, box-shadow 180ms ease;
       display: flex;
       flex-direction: column;
       min-height: 100%;
+      background: #fff;
     }
 
     .card:hover {
@@ -333,9 +333,10 @@
     }
 
     .card.featured {
-      grid-column: span 8;
+      grid-column: span 12;
       flex-direction: row;
-      min-height: 260px;
+      min-height: 300px;
+      background: linear-gradient(135deg, #ffffff 0%, #f7fffc 100%);
     }
 
     .card-media {
@@ -346,8 +347,9 @@
     }
 
     .card.featured .card-media {
-      width: 46%;
+      width: 42%;
       min-height: auto;
+      background: #f8fbff;
     }
 
     .card-body {
@@ -360,7 +362,7 @@
 
     .card.featured .card-body {
       justify-content: center;
-      padding: 22px;
+      padding: 24px;
     }
 
     .card-kicker {
@@ -378,7 +380,7 @@
       letter-spacing: -0.02em;
     }
 
-    .card.featured h3 { font-size: 1.5rem; }
+    .card.featured h3 { font-size: 1.7rem; }
     .card p { margin: 0; color: var(--text-muted); line-height: 1.55; }
 
     .card-footer {
@@ -389,6 +391,12 @@
       gap: 10px;
       padding-top: 6px;
     }
+
+    .card:nth-child(1) { background: linear-gradient(180deg, #fffaf3 0%, #ffffff 100%); }
+    .card:nth-child(2) { background: linear-gradient(180deg, #f6fbff 0%, #ffffff 100%); }
+    .card:nth-child(3) { background: linear-gradient(180deg, #f5fffb 0%, #ffffff 100%); }
+    .card:nth-child(4) { background: linear-gradient(180deg, #fff7fb 0%, #ffffff 100%); }
+    .card:nth-child(5) { background: linear-gradient(180deg, #f8f5ff 0%, #ffffff 100%); }
 
     .read-more::after { content: "→"; margin-left: 6px; }
     .read-time { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
@@ -437,10 +445,10 @@
           <div class="hero-copy">
             <div class="eyebrow">QuickDrop Blog</div>
             <h1>Practical guides for faster file sharing.</h1>
-            <p class="muted">A cleaner reading experience with cover images, quick summaries, and SEO-friendly article pages built for browser-based sharing tips.</p>
+            <p class="muted">Easy guides with cover images, short summaries, and clear steps for sharing files in your browser.</p>
             <div class="hero-meta">
               <span class="meta-pill">Cover images for every guide</span>
-              <span class="meta-pill">Unique SEO article URLs</span>
+              <span class="meta-pill">Short, practical summaries</span>
               <span class="meta-pill">Fast peer-to-peer sharing</span>
             </div>
           </div>
@@ -448,30 +456,11 @@
           <div class="hero-visual">
             <img src="/assets/blog/blog-index-hero.svg" alt="QuickDrop blog cover art with connected devices and article cards.">
             <div class="hero-badge">
-              <strong>Read like a real blog</strong>
-              <span>Editorial layout with cover art, featured posts, and quick entry points into each guide.</span>
+              <strong>Simple and easy to read</strong>
+              <span>Browse cover images, open any guide quickly, and find the right file-sharing tip in seconds.</span>
             </div>
           </div>
         </section>
-
-        <div class="section-title">
-          <div>
-            <h2>Featured article</h2>
-            <p>Start with the newest article and browse the rest below.</p>
-          </div>
-        </div>
-
-        <article class="feature post">
-          <div class="feature-visual">
-            <img src="/assets/blog/snapdrop-alternative-hero.svg" alt="Snapdrop alternative article cover image.">
-          </div>
-          <div class="feature-copy">
-            <div class="tag">Featured</div>
-            <h3><a href="/blog/snapdrop-alternative">Best Snapdrop Alternative for Fast File Sharing (2026)</a></h3>
-            <p>See why QuickDrop is a faster QR-based alternative when Snapdrop is unreliable or slow.</p>
-            <a class="feature-link" href="/blog/snapdrop-alternative">Read article</a>
-          </div>
-        </article>
 
         <div class="section-title">
           <div>
@@ -497,9 +486,6 @@
           </article>
 
           <article class="card post">
-            <div class="card-media">
-              <img src="/assets/blog/send-large-files-online-free-hero.svg" alt="Send large files online for free cover image.">
-            </div>
             <div class="card-body">
               <div class="card-kicker">Large files</div>
               <h3><a href="/blog/send-large-files-online-free">How to Send Large Files Online for Free (Fast and Secure)</a></h3>
@@ -512,9 +498,6 @@
           </article>
 
           <article class="card post">
-            <div class="card-media">
-              <img src="/assets/blog/airdrop-for-windows-hero.svg" alt="AirDrop for Windows cover image.">
-            </div>
             <div class="card-body">
               <div class="card-kicker">Windows</div>
               <h3><a href="/blog/airdrop-for-windows">AirDrop for Windows: How to Share Files Between Devices Instantly</a></h3>
@@ -527,9 +510,6 @@
           </article>
 
           <article class="card post">
-            <div class="card-media">
-              <img src="/assets/blog/send-files-without-internet-hero.svg" alt="Send files without internet cover image.">
-            </div>
             <div class="card-body">
               <div class="card-kicker">Offline sharing</div>
               <h3><a href="/blog/send-files-without-internet">How to Send Files Between Devices Without Internet (No Apps, No Bluetooth)</a></h3>
@@ -542,9 +522,6 @@
           </article>
 
           <article class="card post">
-            <div class="card-media">
-              <img src="/assets/blog/qr-code-file-transfer-hero.svg" alt="QR code file transfer cover image.">
-            </div>
             <div class="card-body">
               <div class="card-kicker">QR pairing</div>
               <h3><a href="/blog/qr-code-file-transfer">QR Code File Transfer Guide</a></h3>
