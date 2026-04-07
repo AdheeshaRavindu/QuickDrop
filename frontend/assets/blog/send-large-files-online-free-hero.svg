@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Send Large Files Online for Free</title>
+  <desc id="desc">Large file transfer concept with progress bar and connected devices.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#e8f4ff"/>
+      <stop offset="100%" stop-color="#eefcf4"/>
+    </linearGradient>
+    <linearGradient id="prog" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#0d7f6f"/>
+      <stop offset="100%" stop-color="#40b48f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect x="120" y="180" width="470" height="300" rx="18" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="160" y="230" width="390" height="220" rx="12" fill="#f8fbff"/>
+  <rect x="680" y="150" width="220" height="390" rx="34" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="705" y="215" width="170" height="265" rx="18" fill="#f8fbff"/>
+  <path d="M590 330 C620 305, 650 305, 680 330" stroke="#067a69" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <rect x="940" y="220" width="170" height="210" rx="16" fill="#ffffff" stroke="#cfdff0" stroke-width="6"/>
+  <text x="1025" y="275" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="#11233c">4.8 GB</text>
+  <rect x="965" y="300" width="120" height="18" rx="9" fill="#d7e4f2"/>
+  <rect x="965" y="300" width="92" height="18" rx="9" fill="url(#prog)"/>
+  <text x="1025" y="350" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="16" font-weight="600" fill="#5c708b">Direct Transfer</text>
+  <text x="600" y="96" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="44" font-weight="800" fill="#11233c">Send Large Files Online for Free</text>
+  <text x="600" y="136" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" fill="#5c708b">No upload queue, no account required</text>
+</svg>

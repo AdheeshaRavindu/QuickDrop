@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">AirDrop alternative for Windows</title>
+  <desc id="desc">Windows laptop and smartphone connected with fast cross-platform file sharing.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#e8f4ff"/>
+      <stop offset="100%" stop-color="#eefcf4"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#067a69"/>
+      <stop offset="100%" stop-color="#118f7c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect x="120" y="160" width="560" height="340" rx="16" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="170" y="210" width="460" height="240" rx="12" fill="#f8fbff"/>
+  <rect x="820" y="160" width="220" height="390" rx="34" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="845" y="225" width="170" height="265" rx="18" fill="#f8fbff"/>
+  <path d="M690 300 C760 250, 790 250, 850 300" stroke="url(#accent)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M690 360 C760 410, 790 410, 850 360" stroke="url(#accent)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <circle cx="690" cy="330" r="24" fill="#067a69"/>
+  <circle cx="850" cy="330" r="24" fill="#118f7c"/>
+  <text x="600" y="95" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="48" font-weight="800" fill="#11233c">AirDrop Alternative for Windows</text>
+  <text x="600" y="135" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" fill="#5c708b">Fast browser-to-browser sharing across devices</text>
+</svg>
