@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700" role="img" aria-labelledby="title desc">
+  <title id="title">QuickDrop Blog Cover</title>
+  <desc id="desc">Editorial cover art with devices, file cards, and peer-to-peer connection lines.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eef7ff"/>
+      <stop offset="45%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#eefcf4"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#067a69"/>
+      <stop offset="100%" stop-color="#118f7c"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#12385c" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="700" fill="url(#bg)"/>
+  <circle cx="170" cy="110" r="110" fill="#9fd8ff" opacity="0.22"/>
+  <circle cx="1460" cy="560" r="140" fill="#ffd1b4" opacity="0.26"/>
+  <circle cx="1240" cy="120" r="120" fill="#b5f0dd" opacity="0.22"/>
+  <rect x="120" y="130" width="470" height="420" rx="36" fill="#ffffff" filter="url(#softShadow)"/>
+  <rect x="165" y="190" width="380" height="88" rx="20" fill="#f8fbff" stroke="#dceaf6"/>
+  <rect x="165" y="304" width="380" height="88" rx="20" fill="#f8fbff" stroke="#dceaf6"/>
+  <rect x="165" y="418" width="280" height="88" rx="20" fill="#f8fbff" stroke="#dceaf6"/>
+  <rect x="690" y="110" width="350" height="460" rx="42" fill="#ffffff" filter="url(#softShadow)"/>
+  <rect x="740" y="165" width="250" height="350" rx="18" fill="#f8fbff" stroke="#dceaf6"/>
+  <rect x="690" y="170" width="350" height="50" rx="25" fill="url(#accent)"/>
+  <text x="865" y="204" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="22" font-weight="800" fill="#ffffff">QuickDrop Articles</text>
+  <path d="M560 340 C650 275, 685 275, 740 340" stroke="url(#accent)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M560 400 C650 465, 685 465, 740 400" stroke="url(#accent)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <circle cx="560" cy="370" r="30" fill="#067a69"/>
+  <circle cx="740" cy="370" r="30" fill="#118f7c"/>
+  <text x="1210" y="210" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="56" font-weight="800" fill="#11233c">QuickDrop Blog</text>
+  <text x="1210" y="260" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="600" fill="#5c708b">Practical guides for fast, secure file sharing</text>
+  <g font-family="Manrope, Segoe UI, sans-serif" font-size="22" font-weight="700" fill="#11233c">
+    <text x="205" y="241">Snapdrop alternative</text>
+    <text x="205" y="355">Large files online</text>
+    <text x="205" y="469">No login sharing</text>
+  </g>
+  <g font-family="Manrope, Segoe UI, sans-serif" font-size="16" font-weight="600" fill="#5c708b">
+    <text x="205" y="270">Cover images, step-by-step guides, and product tips</text>
+    <text x="205" y="384">Editorial articles with unique SEO URLs</text>
+    <text x="205" y="498">Browser-based transfers without friction</text>
+  </g>
+</svg>
