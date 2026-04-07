@@ -639,6 +639,45 @@
       flex-wrap: wrap;
     }
 
+    .transfer-warning-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      margin: -28px -28px 16px -28px;
+      margin-bottom: 16px;
+      background: linear-gradient(120deg, #fff3cd, #ffe8a3);
+      border-bottom: 2px solid #ffc107;
+      border-radius: 24px 24px 0 0;
+      color: #7f5a00;
+      font-weight: 600;
+      font-size: 0.95rem;
+      animation: slideDown 300ms ease;
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+    }
+
+    .transfer-warning-banner.show {
+      display: flex;
+    }
+
+    .transfer-warning-banner::before {
+      content: "⚠️";
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .footer a {
       color: #1f4f85;
       text-decoration: none;
@@ -902,6 +941,10 @@
 
     <div id="errorBox" class="error-box"></div>
 
+    <div id="transferWarningBanner" class="transfer-warning-banner" role="alert">
+      <span>Keep this tab open during transfer — don't close, minimize, or switch apps</span>
+    </div>
+
     <div class="mode-row" aria-label="Transfer mode">
       <button id="sendModeBtn" class="btn btn-outline mode-btn" type="button">Send</button>
       <button id="receiveModeBtn" class="btn btn-outline mode-btn" type="button">Receive</button>
@@ -1159,6 +1202,7 @@
         connectionBadge: document.getElementById("connectionBadge"),
         connectionLabel: document.getElementById("connectionLabel"),
         errorBox: document.getElementById("errorBox"),
+        transferWarningBanner: document.getElementById("transferWarningBanner"),
         soundToggle: document.getElementById("soundToggle"),
         shareModalSubtitle: document.getElementById("shareModalSubtitle")
       };
@@ -1191,6 +1235,30 @@
         Object.keys(screens).forEach((stateKey) => {
           screens[stateKey].classList.toggle("active", stateKey === newState);
         });
+        
+        // Show warning banner during active transfers
+        const isTransferring = newState === AppState.TRANSFERRING || newState === AppState.CONNECTED;
+        el.transferWarningBanner.classList.toggle("show", isTransferring);
+        
+        // Update beforeunload handler
+        updateBeforeUnloadHandler();
+      }
+
+      function updateBeforeUnloadHandler() {
+        const isTransferring = currentState === AppState.TRANSFERRING || currentState === AppState.CONNECTED;
+        if (isTransferring) {
+          window.addEventListener("beforeunload", handleBeforeUnload);
+        } else {
+          window.removeEventListener("beforeunload", handleBeforeUnload);
+        }
+      }
+
+      function handleBeforeUnload(e) {
+        if (currentState === AppState.TRANSFERRING || currentState === AppState.CONNECTED) {
+          e.preventDefault();
+          e.returnValue = "";
+          return "";
+        }
       }
 
       function updateModeUi() {
@@ -2255,6 +2323,13 @@
         updateSeoMeta();
         await loadRuntimeConfig();
         bindEvents();
+
+        // Add visibility change listener to warn about background transfers
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && (currentState === AppState.TRANSFERRING || currentState === AppState.CONNECTED)) {
+            showError("⚠️ Warning: Transfer in progress. Returning to this app may interrupt the transfer. Keep this tab active.");
+          }
+        });
 
         // Always land in send mode first, regardless of URL room state.
         shareOrigin = normalizeShareOrigin(localStorage.getItem("quickdropShareAddress") || shareOrigin || window.location.origin);
