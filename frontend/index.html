@@ -645,11 +645,10 @@
       justify-content: center;
       gap: 8px;
       padding: 12px 16px;
-      margin: -28px -28px 16px -28px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       background: linear-gradient(120deg, #fff3cd, #ffe8a3);
-      border-bottom: 2px solid #ffc107;
-      border-radius: 24px 24px 0 0;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
       color: #7f5a00;
       font-weight: 600;
       font-size: 0.95rem;
@@ -658,7 +657,7 @@
     }
 
     .transfer-warning-banner.show {
-      display: flex;
+      display: flex !important;
     }
 
     .transfer-warning-banner::before {
@@ -1239,6 +1238,7 @@
         // Show warning banner during active transfers
         const isTransferring = newState === AppState.TRANSFERRING || newState === AppState.CONNECTED;
         el.transferWarningBanner.classList.toggle("show", isTransferring);
+        console.log(`[QuickDrop] State: ${newState}, Warning Banner Show: ${isTransferring}`);
         
         // Update beforeunload handler
         updateBeforeUnloadHandler();
