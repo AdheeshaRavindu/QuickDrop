@@ -46,6 +46,7 @@ function isHtmlResponse(response) {
 
 const ROOM_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 const MAX_SIGNAL_PAYLOAD_BYTES = 32 * 1024;
+const BLOG_SLUG_PATTERN = /^[a-z0-9-]{1,120}$/;
 
 function isValidRoomId(roomId) {
   return ROOM_ID_PATTERN.test(roomId);
@@ -110,19 +111,15 @@ export default {
       }
     }
 
-    if (request.method === "GET" && (url.pathname === "/blog/send-files-without-internet" || url.pathname === "/blog/send-files-without-internet/")) {
-      const articleRequest = new Request(new URL("/blog-send-files-without-internet.html", url), request);
-      const articleResponse = await env.ASSETS.fetch(articleRequest);
-      if (articleResponse.status !== 404) {
-        return applySecurityHeaders(articleResponse);
-      }
-    }
-
-    if (request.method === "GET" && (url.pathname === "/blog/qr-code-file-transfer" || url.pathname === "/blog/qr-code-file-transfer/")) {
-      const qrGuideRequest = new Request(new URL("/blog-qr-code-file-transfer.html", url), request);
-      const qrGuideResponse = await env.ASSETS.fetch(qrGuideRequest);
-      if (qrGuideResponse.status !== 404) {
-        return applySecurityHeaders(qrGuideResponse);
+    if (request.method === "GET" && url.pathname.startsWith("/blog/")) {
+      const slug = url.pathname.replace(/^\/blog\//, "").replace(/\/$/, "");
+      if (BLOG_SLUG_PATTERN.test(slug)) {
+        const articlePath = `/blog-${slug}.html`;
+        const articleRequest = new Request(new URL(articlePath, url), request);
+        const articleResponse = await env.ASSETS.fetch(articleRequest);
+        if (articleResponse.status !== 404) {
+          return applySecurityHeaders(articleResponse);
+        }
       }
     }
 
