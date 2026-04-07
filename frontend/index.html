@@ -630,6 +630,15 @@
       color: var(--text-muted);
     }
 
+    .bottom-tools {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
     .footer a {
       color: #1f4f85;
       text-decoration: none;
@@ -851,6 +860,10 @@
         padding: 9px 12px;
       }
 
+      .bottom-tools {
+        justify-content: flex-start;
+      }
+
       .share-dialog {
         width: 100%;
         max-height: 85dvh;
@@ -880,11 +893,6 @@
         <span class="brand-text">QuickDrop</span>
       </a>
       <div class="topbar-right">
-        <button id="shareSiteBtn" class="topbar-share-site highlight-site" type="button">Share site</button>
-        <label class="sound-toggle">
-          <input id="soundToggle" type="checkbox" checked>
-          Sound effects
-        </label>
         <div id="connectionBadge" class="status-inline warn">
           <span class="dot"></span><span id="connectionLabel">Not connected</span>
         </div>
@@ -1038,6 +1046,14 @@
         </div>
       </div>
     </section>
+
+    <div class="bottom-tools">
+      <button id="shareSiteBtn" class="topbar-share-site highlight-site" type="button">Share site</button>
+      <label class="sound-toggle">
+        <input id="soundToggle" type="checkbox" checked>
+        Sound effects
+      </label>
+    </div>
 
     <div class="footer">
       <span>Made by <a href="https://www.linkedin.com/in/adheesharavindu/" target="_blank" rel="noopener noreferrer">Ravindu Adheesha</a></span>
