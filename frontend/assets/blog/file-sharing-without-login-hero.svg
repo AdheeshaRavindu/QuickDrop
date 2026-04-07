@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">File Sharing Without Login</title>
+  <desc id="desc">Two devices connected directly without account signup or cloud upload.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#e8f4ff"/>
+      <stop offset="100%" stop-color="#eefcf4"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#067a69"/>
+      <stop offset="100%" stop-color="#118f7c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect x="130" y="160" width="250" height="380" rx="32" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="160" y="215" width="190" height="260" rx="18" fill="#f8fbff"/>
+  <rect x="820" y="150" width="250" height="380" rx="18" fill="#ffffff" stroke="#cfdff0" stroke-width="8"/>
+  <rect x="860" y="210" width="170" height="250" rx="14" fill="#f8fbff"/>
+  <path d="M385 330 C500 255, 650 255, 815 330" stroke="url(#accent)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M385 390 C500 465, 650 465, 815 390" stroke="url(#accent)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <circle cx="385" cy="360" r="26" fill="#067a69"/>
+  <circle cx="815" cy="360" r="26" fill="#118f7c"/>
+  <text x="600" y="92" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="44" font-weight="800" fill="#11233c">File Sharing Without Login</text>
+  <text x="600" y="132" text-anchor="middle" font-family="Manrope, Segoe UI, sans-serif" font-size="24" font-weight="600" fill="#5c708b">Instant direct sharing with no signup required</text>
+</svg>
