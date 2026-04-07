@@ -4,4 +4,16 @@
     <loc>https://quickdrops.link/</loc>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://quickdrops.link/blog</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quickdrops.link/blog/send-files-without-internet</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://quickdrops.link/blog/qr-code-file-transfer</loc>
+    <priority>0.7</priority>
+  </url>
 </urlset>

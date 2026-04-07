@@ -108,6 +108,17 @@
       color: var(--text-muted);
       line-height: 1.5;
     }
+
+    .post a {
+      color: #0a5f92;
+      text-decoration: none;
+      font-weight: 700;
+      border-bottom: 1px dashed rgba(10, 95, 146, 0.45);
+    }
+
+    .post a:hover {
+      border-bottom-color: rgba(10, 95, 146, 0.9);
+    }
   </style>
 </head>
 <body>
@@ -121,21 +132,16 @@
     </div>
 
     <h1>QuickDrop Blog</h1>
-    <p class="muted">This is your separate blog page. Publish your articles here and link each post.</p>
+    <p class="muted">Practical guides for faster and safer browser-based file sharing.</p>
 
     <article class="post">
-      <h2>Article Title 1</h2>
-      <p>Replace this with your first article summary and link.</p>
+      <h2><a href="/blog/send-files-without-internet">How to Send Files Between Devices Without Internet (No Apps, No Bluetooth)</a></h2>
+      <p>Learn how to transfer files directly between phone and laptop using QR pairing and peer-to-peer browser technology.</p>
     </article>
 
     <article class="post">
-      <h2>Article Title 2</h2>
-      <p>Replace this with your second article summary and link.</p>
-    </article>
-
-    <article class="post">
-      <h2>Article Title 3</h2>
-      <p>Replace this with your third article summary and link.</p>
+      <h2><a href="/blog/qr-code-file-transfer">QR Code File Transfer Guide</a></h2>
+      <p>A quick breakdown of why QR code pairing makes file sharing faster and easier for everyday use.</p>
     </article>
   </main>
 </body>

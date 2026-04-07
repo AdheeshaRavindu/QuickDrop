@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">QuickDrop File Sharing Steps</title>
+  <desc id="desc">Five-step horizontal process showing open app, connect wifi, scan QR, select files, and transfer.</desc>
+  <rect width="1200" height="520" fill="#ffffff"/>
+  <g font-family="Manrope, Segoe UI, sans-serif">
+    <text x="600" y="58" text-anchor="middle" font-size="40" font-weight="800" fill="#11233c">How It Works</text>
+    <text x="600" y="92" text-anchor="middle" font-size="20" font-weight="600" fill="#5c708b">Open, scan, and send in seconds</text>
+  </g>
+  <g>
+    <rect x="80" y="140" width="200" height="250" rx="18" fill="#f8fbff" stroke="#cfdff0"/>
+    <text x="180" y="190" text-anchor="middle" font-size="24" font-weight="800" fill="#067a69">1</text>
+    <text x="180" y="232" text-anchor="middle" font-size="20" font-weight="700" fill="#11233c">Open</text>
+    <text x="180" y="264" text-anchor="middle" font-size="16" fill="#5c708b">QuickDrop on</text>
+    <text x="180" y="286" text-anchor="middle" font-size="16" fill="#5c708b">both devices</text>
+
+    <rect x="310" y="140" width="200" height="250" rx="18" fill="#f8fbff" stroke="#cfdff0"/>
+    <text x="410" y="190" text-anchor="middle" font-size="24" font-weight="800" fill="#067a69">2</text>
+    <text x="410" y="232" text-anchor="middle" font-size="20" font-weight="700" fill="#11233c">Connect</text>
+    <text x="410" y="264" text-anchor="middle" font-size="16" fill="#5c708b">Same Wi-Fi</text>
+    <text x="410" y="286" text-anchor="middle" font-size="16" fill="#5c708b">or hotspot</text>
+
+    <rect x="540" y="140" width="200" height="250" rx="18" fill="#f8fbff" stroke="#cfdff0"/>
+    <text x="640" y="190" text-anchor="middle" font-size="24" font-weight="800" fill="#067a69">3</text>
+    <text x="640" y="232" text-anchor="middle" font-size="20" font-weight="700" fill="#11233c">Scan QR</text>
+    <text x="640" y="264" text-anchor="middle" font-size="16" fill="#5c708b">Instant secure</text>
+    <text x="640" y="286" text-anchor="middle" font-size="16" fill="#5c708b">pairing</text>
+
+    <rect x="770" y="140" width="200" height="250" rx="18" fill="#f8fbff" stroke="#cfdff0"/>
+    <text x="870" y="190" text-anchor="middle" font-size="24" font-weight="800" fill="#067a69">4</text>
+    <text x="870" y="232" text-anchor="middle" font-size="20" font-weight="700" fill="#11233c">Select</text>
+    <text x="870" y="264" text-anchor="middle" font-size="16" fill="#5c708b">Choose files</text>
+    <text x="870" y="286" text-anchor="middle" font-size="16" fill="#5c708b">or text</text>
+
+    <rect x="1000" y="140" width="120" height="250" rx="18" fill="#f8fbff" stroke="#cfdff0"/>
+    <text x="1060" y="190" text-anchor="middle" font-size="24" font-weight="800" fill="#067a69">5</text>
+    <text x="1060" y="232" text-anchor="middle" font-size="20" font-weight="700" fill="#11233c">Send</text>
+    <text x="1060" y="264" text-anchor="middle" font-size="16" fill="#5c708b">Direct</text>
+    <text x="1060" y="286" text-anchor="middle" font-size="16" fill="#5c708b">transfer</text>
+
+    <path d="M280 265 L305 265" stroke="#067a69" stroke-width="4"/>
+    <path d="M510 265 L535 265" stroke="#067a69" stroke-width="4"/>
+    <path d="M740 265 L765 265" stroke="#067a69" stroke-width="4"/>
+    <path d="M970 265 L995 265" stroke="#067a69" stroke-width="4"/>
+  </g>
+</svg>
