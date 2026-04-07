@@ -13,6 +13,18 @@ A fast, secure, peer-to-peer file and text sharing application. Share files and 
 - **Cross-Device**: Works seamlessly across browsers and devices
 - **Instant Setup**: No registration, no login—just open and share
 
+## 📰 Blog
+
+QuickDrop also includes a blog with step-by-step guides for sharing files in the browser.
+
+- [Blog home](https://quickdrops.link/blog)
+- [Snapdrop alternative](https://quickdrops.link/blog/snapdrop-alternative)
+- [AirDrop for Windows](https://quickdrops.link/blog/airdrop-for-windows)
+- [Send large files online for free](https://quickdrops.link/blog/send-large-files-online-free)
+- [File sharing without login](https://quickdrops.link/blog/file-sharing-without-login)
+- [Send files without internet](https://quickdrops.link/blog/send-files-without-internet)
+- [QR code file transfer](https://quickdrops.link/blog/qr-code-file-transfer)
+
 ## 🚀 Quick Start
 
 1. **Share a File or Text**: Open [quickdrop-share.adheesharavindu001.workers.dev](https://quickdrop-share.adheesharavindu001.workers.dev)
@@ -71,7 +83,9 @@ npx wrangler deploy
 ```
 QuickDrop/
 ├── frontend/
-│   └── index.html          # Single-page application
+│   ├── index.html          # Single-page application
+│   ├── blog.html          # Blog landing page
+│   └── blog-*.html        # Standalone blog article pages
 ├── worker/
 │   ├── src/
 │   │   └── index.js        # Cloudflare Worker entry point
