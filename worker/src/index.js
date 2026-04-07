@@ -102,6 +102,14 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (request.method === "GET" && (url.pathname === "/blog" || url.pathname === "/blog/")) {
+      const blogRequest = new Request(new URL("/blog.html", url), request);
+      const blogResponse = await env.ASSETS.fetch(blogRequest);
+      if (blogResponse.status !== 404) {
+        return applySecurityHeaders(blogResponse);
+      }
+    }
+
     if (url.pathname === "/api/config") {
       const body = {
         publicBaseUrl: env.PUBLIC_BASE_URL || "",
