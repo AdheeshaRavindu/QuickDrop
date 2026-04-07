@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /ws/
-Disallow: /room/
 
-Sitemap: https://quickdrop-share-production.adheesharavindu001.workers.dev/sitemap.xml
+Sitemap: https://quickdrops.link/sitemap.xml
